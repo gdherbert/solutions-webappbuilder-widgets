@@ -70,12 +70,10 @@ function(Evented,
             promises.push(this._getLayerInfo(dataItem));
             this.layerStore.push(dataItem);
           } else if (layer.layers) {
-            if(!this.childList) {
-              this.childList = [];
-            }
-            array.forEach(layer.layers, lang.hitch(this, function(subLyr, i) {
+            this.childList = [];
+            array.forEach(layer.layerObject.layerInfos, lang.hitch(this, function(subLyr) {
               var subDataItem = {
-                label : layer.layerObject.layerInfos[i + 1].name,
+                label : subLyr.name,
                 id : layer.id + '.' + subLyr.id,
                 url : layer.url + '/' + subLyr.id,
                 type : 'Layer',
@@ -96,9 +94,7 @@ function(Evented,
             };
             this.layerStore.push(dataItem);
           } else if (layer.layerType === 'ArcGISMapServiceLayer') {
-            if(!this.childList) {
-              this.childList = [];
-            }
+            this.childList = [];
             array.forEach(layer.layerObject.layerInfos, lang.hitch(this, function(subLyr) {
               var subDataItem = {
                 label : subLyr.name,
