@@ -1,16 +1,22 @@
-
 @import url('http://js.arcgis.com/3.12/dijit/themes/claro/claro.css');
 
+@media only screen and (min-device-width : 320px) and (max-device-width : 1024px)
+{
+    html
+    {
+        -webkit-text-size-adjust: none !important;
+    }
+}
 
 .jimu-widget-NetworkTrace .flagbutton
 {
     float: left;
     cursor: pointer;
-    width: 42px;
-    height: 42px;
+    width: 40px;
+    height: 40px;
     background-repeat: no-repeat;
     background-image: url("../images/add-flags.png");
-    background-color: #858585;
+    background-size: 40px 40px;
 }
 
 .jimu-widget-NetworkTrace .esriCTSaveToLayerButton
@@ -51,33 +57,35 @@
 {
     float: left;
     cursor: pointer;
-    width: 42px;
-    height: 42px;
+    width: 40px;
+    height: 40px;
     background-repeat: no-repeat;
     background-image: url("../images/add-barriers.png");
-    background-color: #858585;
+    background-size: 40px 40px;
 }
 
 .jimu-widget-NetworkTrace .flagButtonselected
 {
     float: left;
     cursor: pointer;
-    width: 42px;
-    height: 42px;
+    width: 40px;
+    height: 40px;
     background-repeat: no-repeat;
     background-image: url("../images/add-flags-select.png");
     background-color: #858585;
+    background-size: 40px 40px;
 }
 
 .jimu-widget-NetworkTrace .barrierButtonselected
 {
     float: left;
     cursor: pointer;
-    width: 42px;
-    height: 42px;
+    width: 40px;
+    height: 40px;
     background-repeat: no-repeat;
     background-image: url("../images/add-barriers-select .png");
     background-color: #858585;
+    background-size: 40px 40px;
 }
 
 .jimu-widget-NetworkTrace .esriCTImageDiv
@@ -88,7 +96,9 @@
 
 .jimu-widget-NetworkTrace .tracePanel
 {
-    padding: 10px 20px;
+    padding: 20px 20px 0 20px;
+    float: left;
+    width: 100%;
 }
 
 .jimu-widget-NetworkTrace .traceControl
@@ -99,33 +109,35 @@
 
 .jimu-widget-NetworkTrace .btnFlagStyle
 {
-    width: 50%;
+    width: 100%;
+    float: left;
+    margin-bottom: 10px;
 }
 
 .jimu-widget-NetworkTrace .btnBarrierStyle
 {
-    width: 50%;
-    float: right;
+    width: 100%;
+    float: left;
 }
 
 .jimu-widget-NetworkTrace .flagLabel
 {
     float: left;
-    margin: 17px 10px 0 0;
+    padding: 13px 0px 13px 10px;
     white-space: nowrap;
     text-overflow: ellipsis;
     overflow: hidden;
-    max-width: 60%;
+    max-width: 85%;
 }
 
 .jimu-widget-NetworkTrace .barrierLabel
 {
     float: left;
-    margin: 17px 10px 0 0;
+    padding: 13px 0px 13px 10px;
     white-space: nowrap;
     text-overflow: ellipsis;
     overflow: hidden;
-    max-width: 60%;
+    max-width: 85%;
 }
 
 .jimu-widget-NetworkTrace .traceButtons
@@ -133,28 +145,24 @@
     float: left;
     width: 100%;
     text-align: center;
-    margin-top: 20px;
-    margin-bottom: 20px;
 }
 
 .resultItemButton
 {
     padding: 0;
-    width: 40px;
-    height: 40px;
+    width: 20px;
+    height: 20px;
     -webkit-user-select: none;
     -moz-user-select: none;
     -ms-user-select: none;
     cursor: pointer;
-    -webkit-border-radius: 5px;
-    -moz-border-radius: 5px;
-    -o-border-radius: 5px;
-    border-radius: 5px;
     outline: none;
     background-position: center center;
     background-repeat: no-repeat;
+    background-size: 20px 20px;
     border: 0;
     margin-right: 10px;
+    margin-top: 10px;
     float: left;
 }
 
@@ -165,8 +173,10 @@
     vertical-align: middle;
     text-align: left;
     cursor: pointer;
-    color: blue;
     text-decoration: underline;
+    font-size: 14px;
+    color: #3e3e3e;
+    font-family: Avenir LT 35 Light;
 }
 
 .resultItemSubDiv
@@ -175,7 +185,7 @@
     display: table;
     text-align: center;
     width: 100%;
-    margin: 5px;
+    height: 40px;
 }
 
 .resultItemButtonSkipIcon
@@ -210,15 +220,23 @@
     display: none;
 }
 
+.boxPanel
+{
+    top: 140px !important;
+}
+
 .jimu-widget-NetworkTrace .runIconProcessing
 {
+    position: absolute;
+    width: 100% !important;
+    top: 0px;
+    right: 0px;
+    z-index: 999;
     background-image: url("../images/loading.gif");
-    background-position: center bottom;
+    background-position: center;
     background-repeat: no-repeat;
-    background-size: 100% auto;
-    height: 60px;
-    margin: 0 auto;
-    width: 40px;
+    background-size: 40px auto;
+    text-align: center;
 }
 
 .jimu-widget-NetworkTrace .traceControlDisabledDiv
@@ -228,7 +246,6 @@
 
 .claro .dijitTitlePaneContentInner
 {
-    /*overflow-x: auto;*/
     padding: 0px;
 }
 
@@ -264,13 +281,15 @@
 
 .jimu-widget-NetworkTrace .resultPanelStyle
 {
+    float: left;
     width: 100%;
+    padding: 0 20px;
+    display: none;
 }
 
 .jimu-widget-NetworkTrace .resultItemClass
 {
-    padding: 8px;
-    padding-left: 19px;
+    padding: 0px 0px 20px 0px;
 }
 
 .jimu-widget-NetworkTrace .jimu-btn
@@ -280,14 +299,19 @@
     text-align: center;
     vertical-align: middle;
     white-space: nowrap;
-    margin-right: 12px;
     overflow: hidden;
-    max-width: 45%;
+    width: 45%;
+    height: calc(100% - 10px);
+    height: -moz-calc(100% - 10px);
+    height: -webkit-calc(100% - 10px);
+    height: -o-calc(100% - 10px);
     text-overflow: ellipsis;
     white-space: nowrap;
-    line-height: 31px;
+    line-height: 40px;
     padding: 0 15px;
-    height: 31px;
+    height: 40px;
+    float: left;
+    margin: 20px 0px 20px 0px;
 }
 
 .jimu-widget-NetworkTrace .jimu-btn.jimu-state-disabled
@@ -309,7 +333,6 @@
 .jimu-widget-NetworkTrace .resultPanelContainer
 {
     clear: both;
-    position: relative;
     width: 100%;
 }
 
@@ -356,19 +379,17 @@
     border-left: none;
     border-right: none;
     border-bottom: none;
-    border-top: 1px solid #b5bcc7; /* padding: 0 10px; */
+    border-top: 1px solid #b5bcc7;
 }
-
 
 .dijitheadPaneTitle
 {
-    background-color: #ccc;
     background-image: none;
     background-repeat: repeat-x;
     border-left: none;
     border-right: none;
     border-bottom: none;
-    border-top: 1px solid #b5bcc7;
+    border-top: 1px solid #e5e5e5;
     color: #494949;
     min-height: 17px;
 }
@@ -377,7 +398,6 @@
 {
     max-width: 30%;
     font-weight: bold;
-    color: #485566;
     font-size: 14px;
     float: left;
     cursor: pointer;
@@ -385,8 +405,7 @@
     overflow: hidden;
     text-overflow: ellipsis;
     white-space: nowrap;
-    line-height: 50px;
-    margin-left: 10px;
+    line-height: 40px;
 }
 
 .jimu-widget-NetworkTrace .esriCThyperlinkDiv:hover
@@ -399,6 +418,7 @@
     padding: 5px;
     font-weight: bold;
     padding-bottom: 30px;
+    background-color: #fff;
 }
 
 .jimu-widget-NetworkTrace .esriCTResultHead
@@ -435,15 +455,16 @@
 .jimu-widget-NetworkTrace .esriCTMainDiv
 {
     width: 100%;
+    display: none;
 }
 
 .jimu-widget-NetworkTrace .esriCTTopDiv
 {
-    height: 50px;
-    border-bottom: 1px solid #000;
+    height: 40px;
     text-align: center;
     float: left;
     width: 100%;
+    padding: 0 20px;
 }
 
 .jimu-widget-NetworkTrace .esriCTBackButtonLinkLbl
@@ -465,21 +486,27 @@
 {
     width: 65%;
     font-size: 14px;
-    text-align: center;
+    text-align: right;
     overflow: hidden;
     text-overflow: ellipsis;
     white-space: nowrap;
-    line-height: 50px;
+    line-height: 40px;
     margin-left: 0px;
     margin-right: 0px;
+    float: right;
 }
 
 .jimu-widget-NetworkTrace .esriCTCommonDiv
 {
-    padding: 5px 0px 3px 0px;
+    padding: 10px 0px 10px 0px;
     clear: both;
     float: left;
-    margin-left: 29px;
+    height: 40px;
+    color: #3e3e3e;
+    font-size: 14px;
+    font-family: Avenir LT 35 Light;
+    width: 100%;
+    border-bottom: 1px solid #F5F5F5;
 }
 
 .jimu-widget-NetworkTrace .esriCTWidth
@@ -519,8 +546,8 @@
 
 .jimu-widget-NetworkTrace .esriCTChkMargin
 {
-    margin-bottom: 5px;
-    width: 45%;
+    width: 100%;
+    float: left;
 }
 
 .jimu-widget-NetworkTrace .esriCTHidden
@@ -538,6 +565,7 @@
     width: 99%;
     height: 100%;
     float: left;
+    margin-top: 10px;
 }
 
 .jimu-widget-NetworkTrace .esriCTBtnPos
@@ -553,12 +581,12 @@
 
 .jimu-widget-NetworkTrace .esriCTLabelMargin
 {
-    margin-left: 20px;
+    margin-left: 10px;
     text-overflow: ellipsis;
     white-space: nowrap;
     overflow: hidden;
     display: block;
-    width: 250px;
+    float: left;
 }
 
 .jimu-widget-NetworkTrace .esriCTInfoLink
@@ -571,20 +599,17 @@
 .jimu-widget-NetworkTrace .esriCTParamCheckBox
 {
     position: relative;
-    margin: 0px 0px 7px 0px;
 }
 
 .jimu-widget-NetworkTrace .esriCTChkLabel
 {
     position: absolute;
-    top: 2px;
-    left: 20px;
+    left: 25px;
     overflow: hidden;
     text-overflow: ellipsis;
     white-space: normal;
     width: 250px;
 }
-
 
 .claro .dijitSelect, .claro .dijitTextBox
 {
@@ -640,7 +665,7 @@
 
 .resultItem
 {
-    border-bottom: 1px solid #b5bcc7;
+    border-bottom: 1px solid #f5f5f5;
 }
 
 .jimu-widget-NetworkTrace .lastTitlePaneNodeBorder
@@ -648,11 +673,372 @@
     border-bottom: 1px solid #b5bcc7;
 }
 
-.resultItem:last-child
+/** Input tab starts **/
+
+.jimu-widget-NetworkTrace .esriCTInputLocationTab, .jimu-widget-NetworkTrace .esriCTBarrierLocationTab
 {
-    border-bottom: 0px;
+    color: #3e3e3e;
+    display: none;
+    cursor: pointer;
+    font-size: 14px;
+    font-family: Avenir LT 35 Light;
 }
 
-.jimu-widget-NetworkTrace .lastTitlePane
+.jimu-widget-NetworkTrace .esriCTTabRightimg
 {
+    margin: 10px auto;
+    position: relative;
+    float: right;
+    width: 14px;
+    height: 14px;
+    background-repeat: no-repeat;
+    background-image: url("../images/right-arrow.png");
+    background-size: 14px 14px;
 }
+
+.jimu-widget-NetworkTrace .esriCTBarrierLocationTab
+{
+    border-top: none;
+}
+
+.jimu-widget-NetworkTrace .esriCTInputBarrierTabContainer
+{
+    margin: 0 auto;
+    position: relative;
+    float: left;
+    width: 100%;
+    padding: 6px 20px 10px 20px;
+    background-color: #FFFFFF;
+    border-top: 1px solid #e5e5e5;
+}
+
+.jimu-widget-NetworkTrace .esriCTInputBarrierLoc, .jimu-widget-NetworkTrace .esriCTResultContainer
+{
+    position: absolute;
+    background-color: #FFFFFF;
+    width: calc(100%  - 20px);
+    z-index: 999;
+    display: none;
+    top: 0px;
+    overflow: hidden;
+    padding: 0 20px;
+}
+
+.jimu-widget-NetworkTrace .esriCTInputBarrierLocHeader, .jimu-widget-NetworkTrace .esriCTResultContainerHeader
+{
+    margin: 0px auto;
+    position: relative;
+    width: 100%;
+    height: 40px;
+    border-bottom: 1px solid #B5BCC9;
+    color: #3e3e3e;
+    font-weight: bold;
+    font-size: 14px;
+    text-align: right;
+}
+
+.jimu-widget-NetworkTrace .esriCTBackButtonLink, .jimu-widget-NetworkTrace .esriCTResultContainerBack
+{
+    position: relative;
+    float: left;
+    margin: 10px 0px 10px 0px;
+    cursor: pointer;
+}
+
+.jimu-widget-NetworkTrace .esriCTBackButtonLink:hover, .jimu-widget-NetworkTrace .esriCTResultContainerBack:hover
+{
+    text-decoration: underline;
+}
+
+.jimu-widget-NetworkTrace .esriCTCountLabel, .jimu-widget-NetworkTrace .esriCTResultContainerLbl
+{
+    position: relative;
+    float: right;
+    margin: 10px 10px 10px 0px;
+    max-width: 75%;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+    overflow: hidden;
+}
+
+.jimu-widget-NetworkTrace .esriCTInputBarrierContent, .jimu-widget-NetworkTrace .esriCTResultContainerData
+{
+    position: relative;
+    float: left;
+    margin: 0px auto;
+    width: 100%;
+    height: 100%;
+}
+
+.jimu-widget-NetworkTrace .esriCTInputFlagDiv
+{
+    width: 100%;
+    padding: 10px 10px 10px 10px;
+    float: left;
+    box-sizing: border-box;
+    border-bottom: 1px solid #f5f5f5;
+    height: 40px;
+}
+
+.jimu-widget-NetworkTrace .esriCTInputFlagDiv:hover
+{
+    background-color: #f5f5f5;
+}
+
+.jimu-widget-NetworkTrace .esriCTInputLocAnchor
+{
+    float: left;
+    position: relative;
+    vertical-align: middle;
+    cursor: pointer;
+    font-size: 14px;
+    color: #3e3e3e;
+    font-family: Avenir LT 35 Light;
+    text-decoration: underline;
+}
+
+.jimu-widget-NetworkTrace .esriCTInputFlagCloseDiv
+{
+    background-image: url(../images/delete.png);
+    background-repeat: no-repeat;
+    background-position: center;
+    background-size: 16px;
+    position: relative;
+    float: right;
+    padding: 0px 0px 0px 10px;
+    width: 16px;
+    height: 16px;
+    cursor: pointer;
+}
+.jimu-widget-NetworkTrace .esriCTlblLoc
+{
+    margin: 10px auto;
+    position: relative;
+    float: left;
+    width: 90%;
+}
+
+/** Input tab ends **/
+
+/** Output tab starts **/
+
+.jimu-widget-NetworkTrace .esriCTResultsLayerNamesContainer
+{
+    float: left;
+    width: 100%;
+    display: none;
+    padding: 10px 20px;
+    background-color: #fff;
+}
+
+.jimu-widget-NetworkTrace .esriCTLayerInformationContainer
+{
+    float: left;
+    width: 100%;
+    padding: 10px 20px;
+    color: #3e3e3e;
+    font-size: 14px;
+    font-family: Avenir LT 35 Light;
+}
+
+.jimu-widget-NetworkTrace .esriCTLayerNameContainer
+{
+    float: left;
+    width: 100%;
+    cursor: pointer;
+    padding: 10px 0;
+}
+
+.jimu-widget-NetworkTrace .esriCTLayerName
+{
+    float: left;
+    width: 90%;
+    text-overflow: ellipsis;
+    overflow: hidden;
+    white-space: nowrap;
+    color: #3e3e3e;
+    font-size: 14px;
+    font-family: Avenir LT 35 Light;
+}
+
+.jimu-widget-NetworkTrace .esriCTRightCaretIcon
+{
+    float: right;
+    width: 14px;
+    height: 14px;
+    color: #3e3e3e;
+    font-size: 14px;
+    font-family: Avenir LT 35 Light;
+    background-repeat: no-repeat;
+    background-image: url("../images/right-arrow.png");
+    background-size: 14px 14px;
+}
+
+.jimu-widget-NetworkTrace .esriCTlayerInformationDiv
+{
+    float: left;
+    width: 100%;
+    padding: 5px;
+    text-overflow: ellipsis;
+    overflow: hidden;
+    white-space: nowrap;
+}
+
+.jimu-widget-NetworkTrace .esriCTResultsLayerFeaturesContainer
+{
+    float: left;
+    width: 100%;
+}
+
+/** Output tab ends **/
+
+
+.claro .dijitSelect .dijitArrowButtonInner, .claro .dijitComboBox .dijitArrowButtonInner
+{
+    border: none !important;
+}
+
+.claro .dijitComboBox .dijitButtonNode
+{
+    padding: 2px !important;
+}
+
+.esriCTDartBackgroudColor
+{
+    background-color: transparent !important;
+}
+
+@media screen and (max-width : 414px)
+{
+    .boxPanel
+    {
+        top: 130px !important;
+    }
+}
+
+@media screen and (max-width : 375px)
+{
+    .jimu-widget-NetworkTrace .tracePanel
+    {
+        padding: 20px 5px 0 5px;
+    }
+
+    .jimu-widget-NetworkTrace .esriCTResultContainerBack
+    {
+        margin: 10px 0px !important;
+    }
+
+    .jimu-widget-NetworkTrace .esriCTResultsLayerNamesContainer
+    {
+        padding: 10px 5px !important;
+    }
+
+    .jimu-widget-NetworkTrace .esriCTInputBarrierTabContainer
+    {
+        padding: 6px 5px 10px 5px !important;
+    }
+
+    .jimu-widget-NetworkTrace .esriCTLayerInformationContainer
+    {
+        padding: 20px 5px 0px 5px !important;
+    }
+    .jimu-widget-NetworkTrace .resultPanelStyle, .jimu-widget-NetworkTrace .esriCTInputBarrierLoc, .jimu-widget-NetworkTrace .esriCTResultContainer, .jimu-widget-NetworkTrace .esriCTTopDiv, .jimu-widget-NetworkTrace .esriCTbottomDiv
+    {
+        padding: 0px 5px !important;
+    }
+}
+
+@media screen and (max-width : 360px)
+{
+    .jimu-widget-NetworkTrace .esriCTTabThemePaddding
+    {
+        padding: 10px 5px !important;
+    }
+
+    .jimu-widget-NetworkTrace .esriCTLayerName
+    {
+        width: 90% !important;
+    }
+}
+
+@media screen and (max-width : 320px)
+{
+    .jimu-widget-frame > .jimu-container
+    {
+        padding: 10px !important;
+    }
+}
+
+/* Updated UI starts */
+
+.jimu-widget-NetworkTrace .traceControls
+{
+    float: left;
+    width: 100%;
+}
+
+.jimu-widget-NetworkTrace .esriCTBtnClear
+{
+    margin-right: 20px;
+}
+
+.jimu-widget-NetworkTrace .esriCTbottomDiv
+{
+    float: left;
+    width: 100%;
+    padding: 0 20px;
+}
+
+.jimu-widget-NetworkTrace .esriCTBorderNone
+{
+    border: 0px;
+}
+
+.esriCTDisableScroll
+{
+    overflow-y: hidden !important;
+}
+
+/* Updated UI ends */
+
+/* Save to layer section starts */
+
+.claro .dijitTextBoxIE9
+{
+    background-color: rgba(0, 0, 0, 0.25) !important;
+}
+
+.claro .dijitDateTextBox .dijitArrowButtonIE9::before
+{
+    content: inherit !important;
+}
+
+.claro .dijitComboBox .dijitButtonNodeIE9
+{
+    background-image: none !important;
+    background-repeat: no-repeat;
+    background-color: rgba(0, 0, 0, 0.25) !important;
+}
+
+.claro .dijitTextBoxFocusedIE9 .dijitInputContainer
+{
+    background-color: rgba(0, 0, 0, 0.5) !important;
+}
+
+.claro .dijitDateTextBox .dijitArrowButtonBlankContent::before
+{
+    content: none !important;
+}
+
+.esriCTCentralisedSaveButton
+{
+    float: none !important;
+}
+
+.jimu-popup .content-static
+{
+    margin: 15px 30px 0 !important;
+    padding-top: 5px !important;
+}
+
+/* Save to layer section ends */

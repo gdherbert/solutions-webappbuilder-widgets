@@ -29,3 +29,11 @@
     text-decoration: underline; }
 .imageDiscoveryResultEntriesFilterContainer .noDashedBorder .clearPreviewsContainer, .imageDiscoveryResultEntriesFilterContainer .noDashedBorder .cartResultFilter {
   border-bottom: 0; }
+
+.serviceFilterEntryContainer {
+  margin: 5px 0;
+  color: gray; }
+.serviceFilterEntryContainer input {
+  vertical-align: middle;
+  margin-right: 5px; }
+

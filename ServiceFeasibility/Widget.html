@@ -11,7 +11,8 @@
                             </div>
                             <div class="esriCTSelectFindNearest esriCTHidePanel" data-dojo-attach-point="selectFindNearestDropdownDiv">
                                 <div data-dojo-attach-point="selectFindNearest" class="esriCTFindNearestDropdown">
-                                </div></div>
+                                </div>
+                            </div>
                         </div>
                         <div class="esriCTbusinessInfluenceContainer" data-dojo-attach-point="divBuisnessInfluence">
                         </div>
@@ -43,43 +44,40 @@
                         </div>
                         <div data-dojo-attach-point="tabResults">
                             <div class="esriCTResultContainer" data-dojo-attach-point="resultContainer">
-                                <div class="esriCTRouteLengthContainer">
+                                <div class="esriCTRouteLengthContainer" data-dojo-attach-point="costHeadingDiv">
                                     <div class="esriCTRouteLengthLabel">
-                                        <label>
-                                            ${nls.routeLengthHeading}
+                                        <label data-dojo-attach-point="lblForBox" class="esriCTRouteAndCostLabel">
                                         </label>
                                     </div>
                                     <div class="esriCTRouteLengthCount" data-dojo-attach-point="routeLengthCountValue">
                                     </div>
                                 </div>
-                                <div class="esriCTBusinessPassedContainer">
-                                    <div class="esriCTBusinessPassedLabel">
-                                        <label>
+                                <div class="esriCTBusinessPassedContainer" data-dojo-attach-point="businessPassedDiv">
+                                    <div class="esriCTBusinessPassedLabel" data-dojo-attach-point="businessPassedLabel">
+                                        <label class="esriCTBusinessPassedLabelText">
                                             ${nls.businessPassedCountLabel}</label></div>
                                     <div class="esriCTBusinessPassedCount" data-dojo-attach-point="businessPassedCountValue">
                                     </div>
                                 </div>
                             </div>
                             <div class="esriCTBusinessTitleContainer" data-dojo-attach-point="businessTitleContainer">
-                                <div class="mainListTitleContainer esriCTListTitle">
+                                <div class="mainListTitleContainer esriCTListTitle" data-dojo-attach-point="selectionListTitleContainer">
                                     <div>
-                                        <div class="esriCTBusinessPassedListLabel">
+                                        <div class="esriCTBusinessPassedListLabel" data-dojo-attach-point="businessPassedResultListLabel">
                                             ${nls.businessPassedResultListHeading}
                                         </div>
                                     </div>
                                     <div data-dojo-attach-point="sortIconDiv">
                                         <div class="esriCTSortArrow" data-dojo-attach-point="sortOrderIcon">
                                         </div>
-
                                         <div data-dojo-attach-point="sortTooltip">
-                                                <input type="radio" data-dojo-attach-point="ascendingButton" checked />
-                                                <span class="esriCTAscendingOrderLabel"> ${nls.ascendingOrderLabel} </span>
+                                            <input type="radio" data-dojo-attach-point="ascendingButton" checked />
+                                            <span class="esriCTAscendingOrderLabel">${nls.ascendingOrderLabel} </span>
                                             <div class="esriCTDescendingSort">
                                                 <input type="radio" data-dojo-attach-point="descendingButton" />
-                                                <span class="esriCTDescendingOrderLabel"> ${nls.descendingOrderLabel} </span>
+                                                <span class="esriCTDescendingOrderLabel">${nls.descendingOrderLabel} </span>
                                             </div>
                                         </div>
-
                                     </div>
                                     <div class="" data-dojo-attach-point="exportToCSVContainer">
                                     </div>
@@ -87,8 +85,8 @@
                             </div>
                             <div class="esriCTResultListPanel" data-dojo-attach-point="resultListContainer">
                             </div>
-                             <div class="esriCTExportLayerButtonsContainer  esriCTShowPanel" data-dojo-attach-point="divExportToLayerButtons">
-                        </div>
+                            <div class="esriCTExportLayerButtonsContainer  esriCTShowPanel" data-dojo-attach-point="divExportToLayerButtons">
+                            </div>
                             <div class="esriCTSaveLayerPanel esriCTHidePanel" data-dojo-attach-point="saveToLayerContainer">
                                 <div class="esriCTSaveLayerTitleContainer" data-dojo-attach-point="saveLayerTitleContainer">
                                     <div class="esriCTBackBtnImg" data-dojo-attach-point="backBtnImgContainer">
@@ -117,3 +115,4 @@
             </div>
         </div>
     </div>
+</div>

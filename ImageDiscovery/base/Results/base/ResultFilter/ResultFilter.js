@@ -41,6 +41,9 @@ define([
 
 
                 }
+                else {
+                    this._hideNode(this.cloudCoverFilterContainer);
+                }
             },
 
             refreshResults: function () {
@@ -250,6 +253,44 @@ define([
             },
             hideIconPlatformsContainer: function () {
                 this._hideNode(this.iconPlatformCheckboxesFilterOuterContainer);
+            },
+            getSelectedServices: function () {
+                var i, currentCacheItem, selectedServices = [];
+
+                if (!this.checkboxCache || !this.checkboxCache.length) {
+                    return selectedServices;
+                }
+                for (i = 0; i < this.checkboxCache.length; i++) {
+                    currentCacheItem = this.checkboxCache[i];
+                    if (!currentCacheItem || !currentCacheItem.checkbox || !currentCacheItem.label) {
+                        continue;
+                    }
+                    if (domAttr.get(currentCacheItem.checkbox, "checked")) {
+                        selectedServices.push(currentCacheItem.label);
+                    }
+                }
+                return selectedServices;
+            },
+            setServiceFilter: function (serviceLabels) {
+                this.checkboxCache = [];
+                domConstruct.empty(this.serviceCheckboxesFilterContainer);
+                if (!serviceLabels || !serviceLabels.length) {
+                    this._hideNode(this.serviceCheckboxesFilterOuterContainer);
+                    return
+                }
+                this._showNode(this.serviceCheckboxesFilterOuterContainer);
+                var i, currentServiceContainer, currentServiceLabel, currentServiceCheckbox;
+                for (i = 0; i < serviceLabels.length; i++) {
+                    currentServiceContainer = domConstruct.create("div", {className: "serviceFilterEntryContainer"});
+                    currentServiceLabel = domConstruct.create("span", {innerHTML: serviceLabels[i]});
+                    currentServiceCheckbox = domConstruct.create("input", {type: "checkbox"});
+                    on(currentServiceCheckbox,"click", this.scopedRefreshResultsFxn);
+                    domAttr.set(currentServiceCheckbox, "checked", true);
+                    this.checkboxCache.push({checkbox: currentServiceCheckbox, label: serviceLabels[i]});
+                    domConstruct.place(currentServiceCheckbox, currentServiceContainer);
+                    domConstruct.place(currentServiceLabel, currentServiceContainer);
+                    domConstruct.place(currentServiceContainer, this.serviceCheckboxesFilterContainer);
+                }
             },
 
             setIconPlatformFilter: function (platforms) {

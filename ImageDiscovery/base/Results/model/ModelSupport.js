@@ -158,9 +158,9 @@ define([
                 this._hideNode(this.toggleResultFilterIcon);
             },
             showResultFilterButton: function () {
-                if (this.createResultFilter) {
+             //   if (this.createResultFilter) {
                     this._showNode(this.toggleResultFilterIcon);
-                }
+               // }
             },
             hideResultFilter: function () {
                 if (this.resultFilter && this.resultFilter.isVisible()) {

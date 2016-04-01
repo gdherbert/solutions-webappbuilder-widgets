@@ -63,7 +63,7 @@
 {
     width: 59%;
     float: left;
-    padding: 5px;
+    padding: 10px 5px 5px 5px;
 }
 
 .jimu-widget-ServiceFeasbility-setting .inputurlbox input, .jimu-widget-ServiceFeasbility-setting .setClosestURL
@@ -234,7 +234,7 @@
 
 .jimu-widget-ServiceFeasbility-setting .chkbox .divAceessPointLayersCheckboxes .jimu-checkbox
 {
-    width: 60%;
+    width: 100%;
 }
 
 /* Attributes parameter value starts */
@@ -343,6 +343,7 @@
 /* Attributes parameter value ends */
 
 /* Image Highlighter */
+
 .jimu-widget-ServiceFeasbility-setting .thumbnail-img
 {
     width: 100px;
@@ -353,6 +354,7 @@
 {
     width: 100px;
     height: 67px;
+    position: absolute !important;
 }
 
 .jimu-widget-ServiceFeasbility-setting .esriCTBrwoseImage
@@ -371,7 +373,6 @@
     float: left;
 }
 
-/*additional css*/
 .jimu-widget-ServiceFeasbility-setting .esriCTTargetLayerAlign
 {
     float: left;
@@ -573,7 +574,7 @@
     width: 70%;
 }
 
-.jimu-widget-ServiceFeasbility-setting .esriCTMarginNonRestriction
+.jimu-widget-ServiceFeasbility-setting .esriCTMarginNR
 {
     margin-left: 0px;
 }
@@ -599,21 +600,42 @@
 
 .jimu-widget-ServiceFeasbility-setting .esriCTMinMaxLabel
 {
-	width: 45px;
-	overflow: hidden;
-	text-overflow: ellipsis;
-	white-space: nowrap;
+    width: 45px;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
 }
 
 .jimu-widget-ServiceFeasbility-setting .esriCTValueLabel
 {
-	width: 75px;
-	overflow: hidden;
-	text-overflow: ellipsis;
-	white-space: nowrap;
+    width: 75px;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
 }
 
 .jimu-widget-ServiceFeasbility-setting .esriCTLayoutLeft
 {
     float: left;
+}
+
+.jimu-widget-ServiceFeasbility-setting .esriCTBusinessOptinalDiv
+{
+    width: 910px;
+}
+
+.jimu-widget-ServiceFeasbility-setting .esriCTInputBeforeAfter
+{
+    margin-right: 5px;
+}
+
+.jimu-widget-ServiceFeasbility-setting .esriCTLabelBeforeAfter
+{
+    margin-right: 15px;
+}
+
+.jimu-widget-ServiceFeasbility-setting .esriCTBeforeOrAfterOpt
+{
+    margin: 5px 0 0 0;
+    padding: 9px 5px 0px 0;
 }

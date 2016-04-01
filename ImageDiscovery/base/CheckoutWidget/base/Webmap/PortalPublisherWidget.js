@@ -53,7 +53,6 @@ define([
                 templateString: template,
                 constructor: function (params) {
                     lang.mixin(this, params || {});
-                    console.log("Portal Url: " + this.portalUrl);
                 },
                 postCreate: function () {
                     this.inherited(arguments);

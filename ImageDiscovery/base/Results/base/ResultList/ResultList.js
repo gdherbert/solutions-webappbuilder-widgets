@@ -1,20 +1,20 @@
-define([ "dojo/_base/declare",
-    "jimu/BaseWidget",
-    "dojo/dom-class",
-    "dojo/dom-style",
-    "dojo/dom-construct",
-    "dojo/dom-attr",
-    "dojo/_base/lang",
-    "../../../BaseDiscoveryMixin",
-    "dgrid/OnDemandList",
-    "dojo/store/Memory",
-    "dojo/query",
-    "dojo/has",
-    "dojo/_base/sniff",
-    "../../../BaseResultCreation"
-],
+define(["dojo/_base/declare",
+        "jimu/BaseWidget",
+        "dojo/dom-class",
+        "dojo/dom-style",
+        "dojo/dom-construct",
+        "dojo/dom-attr",
+        "dojo/_base/lang",
+        "../../../BaseDiscoveryMixin",
+        "dgrid/OnDemandList",
+        "dojo/store/Memory",
+        "dojo/query",
+        "dojo/has",
+        "dojo/_base/sniff",
+        "../../../BaseResultCreation"
+    ],
     function (declare, BaseWidget, domClass, domStyle, domConstruct, domAttr, lang, BaseDiscoveryMixin, OnDemandList, Memory, query, has, sniff, BaseResultCreation) {
-        return declare([ BaseWidget, BaseDiscoveryMixin, BaseResultCreation], {
+        return declare([BaseWidget, BaseDiscoveryMixin, BaseResultCreation], {
             zoomToResultOnClick: true,
             createRemoveIconOnResultItems: false,
             thumbnailMouseOverEnabled: true,
@@ -59,7 +59,7 @@ define([ "dojo/_base/declare",
                 if (has("ie") && has("ie") < 10) {
                     this._handleIEScrollWidth();
                 }
-				this._resultsList.startup();
+                this._resultsList.startup();
             },
             _handleIEScrollWidth: function () {
                 if (this._resultsList.domNode) {
@@ -73,10 +73,8 @@ define([ "dojo/_base/declare",
                 this.resetQuery();
                 var memoryParameters;
                 memoryParameters = {data: resultItems, idProperty: this.COMMON_FIELDS.RESULT_ID_FIELD};
-				console.log("setting store");
-				console.dir(memoryParameters);
                 this.resultsStore = new Memory(memoryParameters);
-                this._resultsList.set('store',this.resultsStore);
+                this._resultsList.set('store', this.resultsStore);
             },
             addResultItem: function (resultItem) {
                 if (resultItem && this.resultsStore) {
@@ -85,7 +83,7 @@ define([ "dojo/_base/declare",
             },
             _renderRow: function (feature) {
                 if (feature && feature.attributes) {
-                    return  this._createArchiveItem(feature);
+                    return this._createArchiveItem(feature);
                 }
                 return null;
             },
@@ -155,6 +153,15 @@ define([ "dojo/_base/declare",
                     this._resultsList.set("query", resultQuery);
                 }
             },
+            getUnfilteredResults: function () {
+                if (this.resultsStore) {
+                    var queryParams = {};
+                    queryParams[this.COMMON_FIELDS.FILTERED_FIELD] = false;
+                    return this.resultsStore.query(queryParams);
+                }
+                return [];
+
+            },
             resetQuery: function () {
                 this.clearTooltipCache();
                 if (this._resultsList) {
@@ -193,7 +200,9 @@ define([ "dojo/_base/declare",
             },
             _handleRemoveFromCartRequest: function (feature) {
                 var cartButtonAndLabel = this.getCartButtonAndLabelForFeature(feature);
-                this._setFeatureRemovedFromCart(feature, cartButtonAndLabel.label, cartButtonAndLabel.container, true);
+                var label = cartButtonAndLabel ? cartButtonAndLabel.label : null;
+                var container = cartButtonAndLabel ? cartButtonAndLabel.container : null;
+                this._setFeatureRemovedFromCart(feature, label, container, true);
 
             },
             _handleAddToCartRequest: function (feature) {
@@ -261,7 +270,7 @@ define([ "dojo/_base/declare",
                     var memoryParameters;
                     memoryParameters = {data: [], idProperty: this.COMMON_FIELDS.RESULT_ID_FIELD};
                     this.resultsStore = new Memory(memoryParameters);
-                    this._resultsList.set('store',this.resultsStore);
+                    this._resultsList.set('store', this.resultsStore);
                 }
             },
             _onCartCountChanged: function () {

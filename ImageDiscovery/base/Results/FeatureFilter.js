@@ -10,6 +10,7 @@ define([
             endDate: null,
             filteredArchiveSensorTypes: [],
             selectedIconPlatforms: [],
+            selectedServices: null,
             cloudCover: null,
             constructor: function (params) {
                 lang.mixin(this, params || {});
@@ -37,6 +38,12 @@ define([
                     if (!this.selectedIconPlatforms || array.indexOf(this.selectedIconPlatforms, feature.attributes.PlatformName) < 0) {
                         return true;
                     }
+                }
+                if (!this.selectedServices || !this.selectedServices.length) {
+                    return true;
+                }
+                if (array.indexOf(this.selectedServices, feature[this.COMMON_FIELDS.SERVICE_LABEL]) < 0) {
+                    return true;
                 }
                 return false;
             },

@@ -1,5 +1,4 @@
-/*global define,dojo,dijit,dojoConfig,alert,console */
-/*jslint browser:true,sloppy:true,nomen:true,unparam:true,plusplus:true,indent:4 */
+/*global define */
 /** @license
 | Copyright 2013 Esri
 |
@@ -17,45 +16,45 @@
 */
 //============================================================================================================================//
 define({
-    root: ({
-        ascendingOrderLabel: "Ascending",
-        descendingOrderLabel: "Descending",
-        ExportToLayer:"Export to layer",
-        configError: "Widget is not configured properly.",
-        searchContainerHeading: "Search",
-        resultsContainerHeading: "Results",
-        findNearest: "Find nearest",
-        DrawBarriersOnMap: "Draw barriers on map (optional)",
-        SelectLocationOnMap: "Select location on map",
-        FindButton: "Find",
-        ClearButton: "Clear",
-        routeLengthHeading: "Route length",
-        businessPassedResultListHeading: "Businesses passed",
-        businessPassedCountLabel: "Businesses passed",
-        invalidGeometryService: "Invalid geometry service.",
-        featureNotExist: "No devices were found within the search area.",
-        invalidTxtBoxValue: "Enter valid numbers.",
-        noBusinessPassedMsg: "No businesses passed.",
-        backButtonLabel: "Back",
-        saveToLayerLabel: "Save to layer",
-        saveRouteLayerLabel: "Route layer",
-        businessPassedLabel: "Businesses passed",
-        exportToCSVTitle: "Export to CSV",
-        saveLayerTitle: "Save to layer",
-        routeLengthLabel: "Route length",
-        businessLayerLabel: "Business layer",
-        saveBtnLabel: "Save",
-        saveClickError: "Select at least one layer to save.",
-        saveToLayerSuccess: "Successfully saved results to ${0}.",
-        saveToLayerFailed: "Failed to save results to ${0}.",
-        unableToCreateSearchBuffer:"Unable to create search buffer area.",
-        noChangesToSave: "No changes to save to business layer.",
-        businessLayerUnavailable: "Selected business layer is not available in the webmap.",
-        targetRouteLayerUnavailable: "Target route layer is not available in the webmap.",
-        targetBusinessLayerUnavailable: "Target business layer is not available in the webmap.",
-        targetRouteLayerUneditable: "Target route layer is not editable.",
-        targetBusinessLayerUneditable: "Target business layer is not editable.",
-        unableToFindClosestFacility:"Unable to find closest facility.",
-        unableToGenerateRoute: "Unable to generate route."
-    })
+  root: ({
+    ascendingOrderLabel: "Ascending",
+    descendingOrderLabel: "Descending",
+    ExportToLayer: "Export",
+    configError: "Widget is not configured properly.",
+    searchContainerHeading: "Search",
+    resultsContainerHeading: "Results",
+    findNearest: "Find nearest",
+    DrawBarriersOnMap: "Draw barriers on map (optional)",
+    SelectLocationOnMap: "Select location on map",
+    FindButton: "Find",
+    ClearButton: "Clear",
+    routeLengthHeading: "Route length",
+    businessPassedResultListHeading: "Businesses passed",
+    businessPassedCountLabel: "Businesses passed",
+    invalidGeometryService: "Invalid geometry service.",
+    featureNotExist: "No devices were found within the search area.",
+    invalidTxtBoxValue: "Enter valid numbers.",
+    noBusinessPassedMsg: "No businesses passed.",
+    backButtonLabel: "Back",
+    saveToLayerLabel: "Save to layer",
+    saveRouteLayerLabel: "Route layer",
+    businessPassedLabel: "Businesses passed",
+    exportToCSVTitle: "Export to CSV",
+    saveLayerTitle: "Save to layer",
+    routeLengthLabel: "Route length",
+    businessLayerLabel: "Business layer",
+    saveBtnLabel: "Save",
+    saveClickError: "Select at least one layer to save.",
+    saveToLayerSuccess: "Successfully saved results to ${0}.",
+    saveToLayerFailed: "Failed to save results to ${0}.",
+    unableToCreateSearchBuffer: "Unable to create search buffer area.",
+    noChangesToSave: "No changes to save to business layer.",
+    businessLayerUnavailable: "Selected business layer is not available in the webmap.",
+    targetRouteLayerUnavailable: "Target route layer is not available in the webmap.",
+    targetBusinessLayerUnavailable: "Target business layer is not available in the webmap.",
+    targetRouteLayerUneditable: "Target route layer is not editable.",
+    targetBusinessLayerUneditable: "Target business layer is not editable.",
+    unableToFindClosestFacility: "Unable to find closest facility.",
+    unableToGenerateRoute: "Unable to generate route."
+  })
 });

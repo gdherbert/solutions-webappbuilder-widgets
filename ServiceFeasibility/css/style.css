@@ -1,5 +1,13 @@
 @import url('http://js.arcgis.com/3.12/dijit/themes/claro/claro.css');
 
+@media only screen and (min-device-width : 320px) and (max-device-width : 1024px)
+{
+    html
+    {
+        -webkit-text-size-adjust: none !important;
+    }
+}
+
 .jimu-widget-frame > .jimu-container
 {
     height: 100%;
@@ -22,7 +30,7 @@
 
 .jimu-tab > .jimu-viewstack
 {
-    position: static;
+    position: static !important;
     margin-top: 5px;
 }
 
@@ -120,7 +128,7 @@
     padding-top: 5px;
     overflow: hidden;
     text-overflow: ellipsis;
-    width: 69%;
+    width: 65%;
     white-space: nowrap;
 }
 
@@ -141,6 +149,11 @@
 {
     clear: both;
     padding: 10px 0px 10px 0px;
+}
+
+.jimu-widget-ServiceFeasibility .esriCTBarriersContainer
+{
+    display: none;
 }
 
 .jimu-widget-ServiceFeasibility .esriCTLocationContainer, .esriCTBarriersContainer
@@ -173,7 +186,7 @@
     border: 1px solid #485566;
     width: 44%;
     float: left;
-    padding: 12px 5px 0px 5px;
+    padding: 6px 5px 6px 5px;
     box-shadow: 0px 1px 8px 0px rgba(0, 0, 0, 0.1);
 }
 
@@ -183,7 +196,7 @@
     width: 44%;
     border: 1px solid #485566;
     float: right;
-    padding: 12px 5px 0px 5px;
+    padding: 6px 5px 6px 5px;
     box-shadow: 0px 1px 8px 0px rgba(0, 0, 0, 0.1);
 }
 
@@ -192,21 +205,33 @@
     display: inline-block;
     text-align: center;
     font-size: 14px;
-    height: 50%;
+    height: 49%;
     width: 100%;
     overflow: hidden;
-    text-overflow: ellipsis;
-    white-space: nowrap;
+    text-overflow: initial;
+    white-space: initial;
+}
+
+.jimu-widget-ServiceFeasibility .esriCTRouteAndCostLabel
+{
+    height: 100%;
+    line-height: 18px;
+}
+
+.jimu-widget-ServiceFeasibility .esriCTBusinessPassedLabelText
+{
+    height: 100%;
+    line-height: 18px;
 }
 
 .jimu-widget-ServiceFeasibility .esriCTBusinessPassedLabel
 {
     text-align: center;
     font-size: 14px;
-    height: 50%; /* width: 100%;*/
+    height: 49%;
     overflow: hidden;
-    text-overflow: ellipsis;
-    white-space: nowrap;
+    text-overflow: initial;
+    white-space: initial;
 }
 
 .jimu-widget-ServiceFeasibility .jimu-tab > .control > .tab.jimu-state-selected
@@ -238,42 +263,43 @@
     float: left;
     width: 100%;
     text-align: center;
+    margin-bottom: 15px;
 }
 
 .jimu-widget-ServiceFeasibility .esriCTExportLayerButtonsContainer
 {
     float: left;
     width: 100%;
-    padding: 4% 10% 5% 10%;
-	text-align: center;
+    padding: 5px;
+    text-align: center;
 }
 
 .jimu-widget-ServiceFeasibility #btnFindButton
 {
-	height: 30px;
-	min-width: 10%;
-	max-width: 47%;
-	text-align: center;
-	line-height: 30px;
-	padding: 0 15px;
-	overflow: hidden;
-	text-overflow: ellipsis;
-	white-space: nowrap;
-	margin-left: 5px;
+    height: 30px;
+    min-width: 10%;
+    max-width: 47%;
+    text-align: center;
+    line-height: 30px;
+    padding: 0 15px;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+    margin-left: 5px;
 }
 
 .jimu-widget-ServiceFeasibility #btnClearButton
 {
-	height: 30px;
-	min-width: 10%;
-	max-width: 47%;
-	text-align: center;
-	line-height: 30px;
-	padding: 0 15px;
-	overflow: hidden;
-	text-overflow: ellipsis;
-	white-space: nowrap;
-	margin-left: 5px;
+    height: 30px;
+    min-width: 10%;
+    max-width: 47%;
+    text-align: center;
+    line-height: 30px;
+    padding: 0 15px;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+    margin-left: 5px;
 }
 
 .jimu-foldable-panel .title-label
@@ -301,24 +327,24 @@
 
 .jimu-widget-ServiceFeasibility .esriCTRouteLengthCount
 {
-    height: 50%;
-    font-size: 16px;
+    height: 49%;
+    font-size: 14px;
     text-align: center;
     width: 100%;
     overflow: hidden;
-    text-overflow: ellipsis;
-    white-space: nowrap;
+    word-wrap: break-word;
+    line-height: 18px;
 }
 
 .jimu-widget-ServiceFeasibility .esriCTBusinessPassedCount
 {
-    height: 50%;
-    font-size: 16px;
+    height: 49%;
+    font-size: 14px;
     text-align: center;
     width: 100%;
     overflow: hidden;
-    text-overflow: ellipsis;
-    white-space: nowrap;
+    word-wrap: break-word;
+    line-height: 18px;
 }
 
 .jimu-widget-ServiceFeasibility .esriCTBusinessDropdownContainer
@@ -418,6 +444,7 @@
 .jimu-container .jimu-widget-ServiceFeasibility
 {
     overflow: hidden;
+    min-width: 290px;
 }
 
 .jimu-widget-ServiceFeasibility .esriCTDefaultCursor
@@ -637,11 +664,27 @@
 
 .jimu-widget-ServiceFeasibility .esriCTBusinessPassedListLabel
 {
-    width: 45%;
+    width: auto;
+    margin-right: 5px;
     overflow: hidden;
     text-overflow: ellipsis;
     float: left;
     white-space: nowrap;
+}
+
+.jimu-widget-ServiceFeasibility .esriCTListLabelCSV
+{
+    max-width: 80%;
+}
+
+.jimu-widget-ServiceFeasibility .esriCTListLabelArrow
+{
+    max-width: 90%;
+}
+
+.jimu-widget-ServiceFeasibility .esriCTListLabelFullWidth
+{
+    max-width: 98%;
 }
 
 .jimu-widget-ServiceFeasibility .esriCTsaveRouteLength
@@ -709,7 +752,7 @@
     max-width: 45%;
     text-align: center;
     padding: 0 15px;
-    line-height:30px;
+    line-height: 30px;
     overflow: hidden;
     text-overflow: ellipsis;
     white-space: nowrap;
@@ -764,7 +807,7 @@
     white-space: nowrap;
 }
 
-/* sorting tooltip styles Start */
+/* Sorting tooltip styles end */
 
 .esriCTSortOrderTooltipHide
 {
@@ -795,4 +838,128 @@
 {
     margin-left: 25px;
 }
-/* sorting tooltip styles End*/
+
+.jimu-widget-ServiceFeasibility .esriCTCostHeadingDivFullWidth
+{
+    width: 100%;
+}
+
+.esriCTHideBusinessPassedDiv
+{
+    display: none;
+}
+
+.jimu-widget-frame.jimu-container .jimu-widget-ServiceFeasibility .esriCTDartHoverFeatureList
+{
+    background-color: #ffffff !important;
+    color: #888888 !important;
+}
+
+.esriCTDartBackgroudColor
+{
+    background-color: Transparent !important;
+}
+
+.jimu-widget-frame.jimu-container .jimu-widget-ServiceFeasibility .esriCTSelectedDartFeatureFieldList
+{
+    background-color: #ffffff !important;
+    color: #888888 !important;
+}
+
+.boxPanel
+{
+    top: 140px !important;
+}
+
+/* Sorting tooltip styles End*/
+
+.jimu-panel.jimu-launchpad-panel .claro .dijitSliderImageHandle
+{
+    background: #fff;
+    -webkit-box-shadow: 0 1px 0.5px rgba(0, 0, 0, 0.3), 0 2px 2px rgba(0, 0, 0, 0.2);
+    box-shadow: 0px 1px 0.5px rgba(0,0,0,0.3), 0px 2px 2px rgba(0,0,0,0.2);
+    -webkit-border-radius: 50%;
+    border-radius: 50%;
+    border: 1px solid #3b8fc4;
+    width: 16px;
+    height: 16px;
+    margin-top: -2px;
+    position: absolute;
+}
+
+.jimu-panel.jimu-launchpad-panel .claro .dijitSliderDecrementIconH, .jimu-panel.jimu-launchpad-panel .claro .dijitSliderIncrementIconH, .jimu-panel.jimu-launchpad-panel .claro .dijitSliderDecrementIconV, .jimu-panel.jimu-launchpad-panel .claro .dijitSliderIncrementIconV
+{
+    height: 20px;
+    width: 20px;
+    cursor: pointer;
+    background: #fff;
+    border: 1px solid #ddd;
+    color: #3b8fc4;
+    -webkit-border-radius: 2px;
+    border-radius: 2px;
+    padding: 0;
+}
+
+.jimu-panel.jimu-launchpad-panel .claro .dijitSlider .dijitSliderRemainingBarH, .jimu-panel.jimu-launchpad-panel .claro .dijitSlider .dijitSliderRightBumper
+{
+    border: 0 none;
+    background-color: #ddd;
+}
+
+/* IE9 CSS for Dart Theme */
+
+.claro .dijitTextBoxIE9
+{
+    background-color: rgba(0, 0, 0, 0.25) !important;
+}
+
+.claro .dijitDateTextBox .dijitArrowButtonIE9::before
+{
+    content: inherit !important;
+}
+
+.claro .dijitComboBox .dijitButtonNodeIE9
+{
+    background-image: none !important;
+    background-repeat: no-repeat;
+    background-color: rgba(0, 0, 0, 0.25) !important;
+}
+
+.claro .dijitSelect .dijitArrowButtonIE9
+{
+    background-image: none !important;
+    background-repeat: no-repeat;
+    background-color: rgba(0, 0, 0, 0.25) !important;
+}
+
+.claro .dijitSelectIE9
+{
+    background-color: rgba(0, 0, 0, 0.5) !important;
+}
+
+.claro .dijitTextBoxFocusedIE9 .dijitInputContainer
+{
+    background-color: rgba(0, 0, 0, 0.5) !important;
+}
+
+.claro .dijitComboBox .dijitArrowButtonInner
+{
+    border: none !important;
+}
+
+.claro .dijitTextBox .dijitInputField
+{
+    padding: 2px 8px !importatnt;
+}
+
+.claro .dijitMenuPopupIE9 .dijitMenuItemIE9, .claro .dijitMenuPopupIE9 .dijitMenuItemIE9 td
+{
+    color: #f8f8f8;
+}
+
+.claro .dijitMenuIE9
+{
+    background-color: #4c4c4c;
+}
+
+/* IE9 CSS for Dart Theme */

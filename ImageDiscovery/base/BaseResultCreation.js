@@ -1,17 +1,18 @@
 define([
-    "dojo/_base/declare",
-    "dojo/_base/lang",
-    "dojo/dom-class",
-    "dojo/dom-attr",
-    "dojo/dom-construct",
-    "./BaseDiscoveryMixin",
-    "dojo/_base/array",
-    "dojo/on" ,
-    "dijit/TooltipDialog",
-    "dijit/popup",
-    "dojo/dom-style"
-],
-    function (declare, lang, domClass, domAttr, domConstruct, BaseDiscoveryMixin, array, on, TooltipDialog, popup, domStyle) {
+        "dojo/_base/declare",
+        "dojo/_base/lang",
+        "dojo/dom-class",
+        "dojo/dom-attr",
+        "dojo/dom-construct",
+        "./BaseDiscoveryMixin",
+        'esri/IdentityManager',
+        "dojo/_base/array",
+        "dojo/on" ,
+        "dijit/TooltipDialog",
+        "dijit/popup",
+        "dojo/dom-style"
+    ],
+    function (declare, lang, domClass, domAttr, domConstruct, BaseDiscoveryMixin, IdentityManager,array, on, TooltipDialog, popup, domStyle) {
         return declare([ BaseDiscoveryMixin], {
             blockThumbHover: false,
             _downloadLimitExceedServerDetailString: "The requested number of download images exceeds the limit.",
@@ -66,6 +67,9 @@ define([
                     on(removeFromCartIcon, "click", lang.hitch(this, this.removeItemFromCart, feature, currentEntryElement));
                     domConstruct.place(removeFromCartIcon, currentEntryElement);
                 }
+                var serviceLinkIcon = domConstruct.create("i", {className: "jeremyServiceIcon fa fa-link", title: "View Service",style:{"float":"right",marginRight:"5px",marginTop: "5px",cursor: "pointer"}});
+                on(serviceLinkIcon, "click", lang.hitch(this, this.showServiceLink, feature));
+                domConstruct.place(serviceLinkIcon, currentEntryElement);
                 if (feature[this.COMMON_FIELDS.THUMBNAIL_FIELD]) {
                     archiveThumb = domConstruct.create("img", {className: this.baseResultEntryName + "Thumb", src: feature[this.COMMON_FIELDS.THUMBNAIL_FIELD]});
                     on(archiveThumb, "error", this.archiveLoadThumbnailErrorFnx);
@@ -313,6 +317,20 @@ define([
                 }
                 this.onTogglePreviewItem(feature, onLoadCallback);
 
+            },
+            showServiceLink: function(feature){
+                var serviceToken = null;
+                var  currentFeatureService = feature[this.COMMON_FIELDS.SERVICE_FIELD];
+                var serviceCredential = IdentityManager.findCredential(currentFeatureService.url);
+                if (serviceCredential) {
+                    if (serviceCredential.token) {
+                        serviceToken = serviceCredential.token;
+                    }
+                }
+
+                var targetUrl = currentFeatureService.url;
+                targetUrl += serviceToken ? ("?token=" + serviceToken) : "";
+                window.open(targetUrl, '_blank');
             },
             onTogglePreviewItem: function (feature, onLoadCallback) {
 
