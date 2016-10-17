@@ -538,16 +538,27 @@ define([
               // Pushing object in an array to access it outside
               arraynumberTextboxValue.push(featureLengthAttr);
             }));
+
           // Looping for fieldmap to get number of feature length
           for (j = 0; j < this.config.overview.fieldMap.length; j++) {
             value = 0;
-            // Looping for array number text box to get matched value from the layer.
-            for (k = 0; k < arraynumberTextboxValue.length; k++) {
-              // Checking if param name is equal to the layers id
-              if (this.config.overview.fieldMap[j].paramName ===
-                arraynumberTextboxValue[k].id) {
-                value = arraynumberTextboxValue[k].value;
-                break;
+            if (this.config.overview.fieldMap[j].type === "count") {
+              // Looping for array number text box to get matched value from the layer.
+              for (k = 0; k < arraynumberTextboxValue.length; k++) {
+                // Checking if param name is equal to the layers id
+                if (this.config.overview.fieldMap[j].paramName ===
+                  arraynumberTextboxValue[k].id) {
+                  value = arraynumberTextboxValue[k].value;
+                  break;
+                }
+              }
+            }
+            else if (this.config.overview.fieldMap[j].type === "value") {
+              for (key in this.outputStrings) {
+                if (key === this.config.overview.fieldMap[j].paramName) {
+                  value = this.outputStrings[key];
+                  break;
+                }
               }
             }
             // Setting the attribute value
@@ -606,6 +617,21 @@ define([
       }
     },
 
+    _scrubBlankDateFields: function (fields, features) {
+      var dateFields = [];
+      array.forEach(fields, function (field) {
+        if (field.type === "esriFieldTypeDate")
+          dateFields.push(field.name);
+      });
+      array.forEach(features, function (feature) {
+        array.forEach(dateFields, function (dateField) {
+          if (feature.attributes.hasOwnProperty(dateField)) {
+            if (feature.attributes[dateField] === "")
+              delete feature.attributes[dateField];
+          }
+        });
+      });
+    },
     /**
     *This Function is used to save layer which type is result.
     **/
@@ -683,6 +709,8 @@ define([
             layerObj = this.map.getLayer(output.saveToLayer);
             if (layerObj) {
               this.savedLayers.push(output.paramName);
+              this._scrubBlankDateFields(layerObj.fields, output.results
+                .features);
               deferredArray.push(layerObj.applyEdits(output.results
                 .features, null, null, null, this._applyEditsErrorCallback
               ));
@@ -1611,6 +1639,7 @@ define([
     *@param{object} message: This is a object parameter which is coming from GP execution.
     **/
     _onSubmitJobComplete: function (message) {
+      this._jobID = message.jobInfo.jobId;
       if (message.jobInfo.jobStatus === "esriJobFailed") {
         this._showLoadingIcon(false);
         this._errorMessage(this.nls.GPExecutionFailed);
@@ -1622,12 +1651,27 @@ define([
         this.overExtent = null;
         this.resultsCnt = 0;
         this._inputGeomConvexHull = [];
+        this._geoForOnlyBuffer = [];
+        this.outputStrings = {};
+        if (this.config.overview) {
+          if (this.config.overview.fieldMap) {
+            array.forEach(this.config.overview.fieldMap, function (
+              fieldMap) {
+              if (fieldMap.type === "value") {
+                if (this._verifyParams(message, fieldMap.paramName)) {
+                  this._processGPStringResults(message, fieldMap.paramName);
+                }
+              }
+            }, this);
+          }
+        }
         array.forEach(this.config.geoprocessing.outputs, function (
           output) {
           if (this._verifyParams(message, output.paramName)) {
             this._processGPResults(message, output.paramName);
           }
         }, this);
+
       } catch (ex) {
         this._showLoadingIcon(false);
         this._errorMessage(ex.message);
@@ -1688,13 +1732,19 @@ define([
     */
     _processGPResults: function (message, paramName) {
       var i, bufferGeometry, convexHullGeometry,
-        bufferGeometryGraphic;
+        bufferGeometryGraphic
+
+
       this.gp.getResultData(message.jobInfo.jobId, paramName).then(
         lang.hitch(this, function (result) {
           this._onGetResultDataComplete(result);
+
           this.resultsCnt++;
           if (result.value.features.length > 0) {
+
             for (i = 0; i < result.value.features.length; i++) {
+              this._geoForOnlyBuffer.push(result.value.features[i].geometry);
+
               if (result.value.geometryType ===
                 "esriGeometryPoint") {
                 this._inputGeomConvexHull.push(result.value.features[
@@ -1715,13 +1765,33 @@ define([
           if (this.resultsCnt === this.config.geoprocessing.outputs
             .length) {
             try {
-              convexHullGeometry = geometryEngine.convexHull(this
-                ._inputGeomConvexHull, true);
-              if (convexHullGeometry.length > 0) {
+              var buffDist;
+              if (this.config.overview.BufferType && this.config.overview.BufferType === "Buffer") {
+
+                buffDist = [];
+                convexHullGeometry = this._geoForOnlyBuffer;
+                array.forEach(convexHullGeometry, function (geo) {
+                  buffDist.push(this.config.overview.BufferDistance)
+                }, this);
+              }
+
+              else {
+                convexHullGeometry = geometryEngine.convexHull(this
+             ._inputGeomConvexHull, true);
+                convexHullGeometry = convexHullGeometry[0];
+                buffDist = this.config.overview.BufferDistance;
+
+              }
+              if (true) {
                 bufferGeometry = geometryEngine.buffer(
-                  convexHullGeometry[0], this.config.overview.BufferDistance,
+                  convexHullGeometry, buffDist,
                   this.config.overview.Unit, true);
+
                 if (bufferGeometry) {
+                  if (lang.isArray(bufferGeometry)) {
+                    bufferGeometry = bufferGeometry[0];
+                  }
+
                   domClass.remove(this.outageCheckBoxDiv,
                     "esriCTHidden");
                   bufferGeometryGraphic = new Graphic(
@@ -1764,6 +1834,14 @@ define([
             this._showResultPanel(true);
             this._showAllResultLayers();
           }
+        }));
+    },
+
+    _processGPStringResults: function (message, paramName) {
+
+      this.gp.getResultData(message.jobInfo.jobId, paramName).then(
+        lang.hitch(this, function (result) {
+          this.outputStrings[paramName] = result.value;
         }));
     },
 

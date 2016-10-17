@@ -119,6 +119,7 @@ define([
         "visibility": this.visible.checked ? true : false,
         "type": "Overview",
         "BufferDistance": this.overviewBufferDistance.value,
+        "BufferType": this.overviewBufferType.value,
         "Unit": this.esriUnits.value,
         "MinScale": this.outputMinScaleData.value,
         "MaxScale": this.outputMaxScaleData.value,
@@ -147,6 +148,10 @@ define([
         this.overviewBufferDistance.set("value", ((this.overviewConfig &&
             this.overviewConfig.BufferDistance) ? this.overviewConfig
           .BufferDistance : 0));
+        if (this.overviewConfig &&
+          this.overviewConfig.BufferType) {
+          this.overviewBufferType.set("value", this.overviewConfig.BufferType);
+        }
         // loop for setting selected target Layer
         for (i = 0; i < this.outputLayerType.options.length; i++) {
           // if layers in dropdown is same as already the parameter that exist in the configuration
@@ -428,6 +433,7 @@ define([
       var layer, keyValue, j, t, outageAreaFieldNameDropDown, self,
         fieldMap, index, arrayIndex, divFieldValue, fieldsetDiv,
         selectOptionsArray = [],
+        selectStringOptionsArray = [],
         selectOptionsObject = {};
       // Calling find layer function to get layer from selected layer name
       layer = this.findLayer(this.map.itemInfo.itemData.operationalLayers,
@@ -468,14 +474,21 @@ define([
         selectOptionsObject.label = this.nls.outagePanel.outageNoneText;
         selectOptionsObject.selected = true;
         selectOptionsArray.push(selectOptionsObject);
+        selectStringOptionsArray.push(selectOptionsObject);
         // Looping for field key value to create drop down values for field value
         for (j = 0; j < keyValue.length; j++) {
           selectOptionsObject = {};
-          selectOptionsObject.value = keyValue[j];
-          selectOptionsObject.label = keyValue[j];
+          selectOptionsObject.value = keyValue[j].name;
+          selectOptionsObject.label = keyValue[j].name;
           selectOptionsObject.selected = false;
           selectOptionsArray.push(selectOptionsObject);
+          if (keyValue[j].type === "esriFieldTypeString") {
+            selectStringOptionsArray.push(selectOptionsObject);
+          }
         }
+
+
+
         // Looping for param name value
         array.forEach(this.paramNameValue, lang.hitch(this, function (
           paramName, i) {
@@ -495,7 +508,7 @@ define([
           }, domConstruct.create("input", {}, divFieldValue));
           domConstruct.create("div", {
             "class": "esriCTFieldMapPadding",
-            "innerHTML": this.nls.hintText.fieldNameHint
+            "innerHTML": this.nls.hintText.fieldNameHint + this.nls.hintText.countOfResults
           }, divFieldValue);
           outageAreaFieldNameDropDown.options =
             selectOptionsArray;
@@ -519,12 +532,14 @@ define([
           // setting the param name object and param name array
           this.paramNameObject = {
             "index": i,
-            "value": paramName.name
+            "value": paramName.name,
+            "type": "count"
           };
           this.paramNameArray.push(this.paramNameObject);
           this.fieldName = {
             "index": i,
-            "value": outageAreaFieldNameDropDown.value
+            "value": outageAreaFieldNameDropDown.value,
+            "type": "count"
           };
           this.fieldNameArray.push(this.fieldName);
           // onchange event of outage area field name drop down
@@ -544,6 +559,78 @@ define([
             self.fieldNameArray.push(self.fieldName);
           });
         }));
+        if (this.outputStrings.length > 0) {
+          array.forEach(this.outputStrings, lang.hitch(this, function (
+          paramName, i) {
+            i = i + this.paramNameValue.length + 1 ;
+            // Creation of div and select
+            fieldMap = "";
+            divFieldValue = domConstruct.create("div", {
+              "class": "esriCTOutageFieldParams"
+            }, fieldsetDiv);
+            domConstruct.create("label", {
+              "class": "esriCTFieldName ",
+              "innerHTML": paramName.displayName,
+              "title": paramName.displayName
+            }, divFieldValue);
+            outageAreaFieldNameDropDown = new Select({
+              "class": "esriCTOutageAreaFieldName",
+              "title": paramName.displayName
+            }, domConstruct.create("input", {}, divFieldValue));
+            domConstruct.create("div", {
+              "class": "esriCTFieldMapPadding",
+              "innerHTML": this.nls.hintText.fieldNameHint + this.nls.hintText.valueOfResult
+            }, divFieldValue);
+            outageAreaFieldNameDropDown.options =
+              selectStringOptionsArray;
+            domAttr.set(outageAreaFieldNameDropDown, "index", i);
+            outageAreaFieldNameDropDown.title = this.nls.outagePanel
+              .OutageFieldName;
+            // Setting none text to defalue item value in drop down
+            outageAreaFieldNameDropDown.set({
+              value: selectStringOptionsArray[0].value,
+              label: selectStringOptionsArray[0].label
+            });
+            // Getting the field maped config
+            fieldMap = this._getFieldMapConfig(paramName.name);
+            // If field map config exsists; set the field name from field map config
+            if (fieldMap !== "") {
+              outageAreaFieldNameDropDown.set({
+                value: fieldMap.fieldName,
+                label: fieldMap.fieldName
+              });
+            }
+            // setting the param name object and param name array
+            this.paramNameObject = {
+              "index": i,
+              "value": paramName.name,
+              "type": "value"
+            };
+            this.paramNameArray.push(this.paramNameObject);
+            this.fieldName = {
+              "index": i,
+              "value": outageAreaFieldNameDropDown.value,
+              "type": "value"
+            };
+            this.fieldNameArray.push(this.fieldName);
+            // onchange event of outage area field name drop down
+            outageAreaFieldNameDropDown.on('change', function (evt) {
+              index = this.index;
+              for (t = 0; t < self.fieldNameArray.length; t++) {
+                if (self.fieldNameArray[t].index === index) {
+                  arrayIndex = t;
+                  break;
+                }
+              }
+              self.fieldNameArray.splice(arrayIndex, 1);
+              self.fieldName = {
+                "index": index,
+                "value": evt
+              };
+              self.fieldNameArray.push(self.fieldName);
+            });
+          }));
+        }
       }
     },
 
@@ -596,7 +683,7 @@ define([
           }
           // pushing key value in array
           if (isFieldTypeFound) {
-            layerObject.push(layer.layerObject.fields[i].name);
+            layerObject.push(layer.layerObject.fields[i]);
           }
         }
       }
@@ -622,7 +709,8 @@ define([
                 q].index) {
               fieldMapedObject = {
                 "fieldName": this.fieldNameArray[q].value,
-                "paramName": this.paramNameArray[p].value
+                "paramName": this.paramNameArray[p].value,
+                "type": this.paramNameArray[p].type
               };
               fieldMapedArray.push(fieldMapedObject);
               break;

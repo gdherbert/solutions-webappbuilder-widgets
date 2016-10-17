@@ -16,10 +16,10 @@ The Bomb Threat widget allows users to determine blast radius based on the type 
 * Ability to allow user select a location on the map
 
 ## Requirements
-* Minimum requirement is ArcGIS WebApp Builder v.1.0. Widget is updated to v.1.2.
+* Minimum requiremnet is ArcGIS WebApp Builder v.1.0. Widget has been updated to v.2.0. 
 
 ## Instructions
-In order to develop and test widgets you need to deploy the BombThreat directory to the stemapp/widgets directory in your WebApp Builder installation.
+In order to develop and test widgets you need to deploy the BombThreat directory to the stemapp/widgets directory in your WebApp Builder installation. The widget relies on Geoprocessing and Map services, and SD files for those services can be found in the EmergencyOperations.zip file in the [services](https://github.com/Esri/solutions-webappbuilder-widgets/tree/master/BombThreat/services) folder. The zip file contains ERG.sd which is the Geoprocessing service along with the EmergencyOperation.sd which is the accompanying map service. Please update the BombThreat config.json file once these SD files are published in ArcGIS Server.
 
 ## Issues
 * Find a bug or want to request a new feature?  Please let us know by submitting an issue.

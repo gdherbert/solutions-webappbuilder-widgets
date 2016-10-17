@@ -51,6 +51,7 @@ define([
       this.map = parent.map;
       this.specialFields = {};
       this.dateFields = {};
+      //this._graphics = [];
     },
 
     updateForIncident: function (incident, distance, graphicsLayer) {
@@ -87,7 +88,9 @@ define([
         query.returnGeometry = true;
         query.geometry = bufferGeom;
         query.outFields = this._getFields(layer);
-        defArray.push(layer.queryFeatures(query));
+        if (typeof (layer.queryFeatures) !== 'undefined') {
+          defArray.push(layer.queryFeatures(query));
+        }
       }
       var defList = new DeferredList(defArray);
       defList.then(lang.hitch(this, function (defResults) {
@@ -96,7 +99,7 @@ define([
           var layer = tabLayers[r];
           var fields = this._getFields(layer);
           var graphics = featureSet.features;
-          if (graphics.length > 0) {
+          if (graphics && graphics.length > 0) {
             for (var g = 0; g < graphics.length; g++) {
               var gra = graphics[g];
               var geom = gra.geometry;
@@ -122,16 +125,15 @@ define([
       this.container.innerHTML = "";
       domClass.remove(this.container, "loading");
 
-      if (results.length === 0 && this.buffer) {
+      if (results.length === 0) {
         this.container.innerHTML = this.parent.nls.noFeaturesFound;
-      } else if (results.length === 0 && !this.buffer) {
-        this.container.innerHTML = this.parent.nls.defaultTabMsg;
+        return;
       }
 
       var tpc = domConstruct.create("div", {
-        id: "SA_tpc",
         style: "width:" + (results.length * 220) + "px;"
       }, this.container);
+
       domClass.add(tpc, "SAT_tabPanelContent");
 
       var unit = this.parent.config.distanceUnits;
@@ -139,12 +141,10 @@ define([
 
       //var dFormat = null;
       for (var i = 0; i < results.length; i++) {
-
         var num = i + 1;
         var gra = results[i];
         var geom = gra.geometry;
         var loc = geom;
-
         if (geom.type !== "point") {
           loc = geom.getExtent().getCenter();
         }
@@ -158,15 +158,34 @@ define([
         var c = 0;
         for (var prop in attr) {
           if (prop !== "DISTANCE" && c < 3) {
-            //info += attr[prop] + "<br/>";
-            info += utils.sanitizeHTML(this._getFieldValue(prop, attr[prop]) + "<br/>");
+            var fVal = this._getFieldValue(prop, attr[prop]);
+            var value;
+            if (typeof (fVal) !== 'undefined' && fVal !== null) {
+              value = utils.stripHTML(fVal.toString());
+            } else {
+              value = "";
+            }
+            var label;
+            if (gra._layer && gra._layer.fields) {
+              var cF = this._getField(gra._layer.fields, prop);
+              if (cF) {
+                label = cF.alias;
+              }
+            }
+            if (typeof (label) === 'undefined' || label in ['', ' ', null, undefined]) {
+              label = prop;
+            }
+            if (this.isURL(value)) {
+              value = '<a href="' + value + '" target="_blank" style="color: inherit;">' + label + '</a>';
+            } else if (this.isEmail(value)) {
+              value = '<a href="mailto:' + value + '" style="color: inherit;">' + label + '</a>';
+            }
+            info += (value + "<br/>");
             c += 1;
           }
         }
 
-        var div = domConstruct.create("div", {
-          id: "SA_Feature_" + num
-        }, tpc);
+        var div = domConstruct.create("div", {}, tpc);
         domClass.add(div, "SATcolRec");
 
         var div1 = domConstruct.create("div", {}, div);
@@ -193,6 +212,7 @@ define([
         }
 
         var div5 = domConstruct.create("div", {
+          'class': 'SATcolWrap',
           innerHTML: info
         }, div);
         domClass.add(div5, "SATcolInfo");
@@ -217,18 +237,31 @@ define([
           }
           distLine.addPath([loc, distPt]);
           this.graphicsLayer.add(new Graphic(distLine, distSym, {}));
+          //this._graphics.push(new Graphic(distLine, distSym, {}));
         }
         this.graphicsLayer.add(new Graphic(loc, sms, attr));
         this.graphicsLayer.add(new Graphic(loc, symText, attr));
-
+        //this._graphics.push(new Graphic(loc, sms, attr));
+        //this._graphics.push(new Graphic(loc, symText, attr));
       }
 
+    },
+
+    _getField: function (fields, v) {
+      for (var i = 0; i < fields.length; i++) {
+        var f = fields[i];
+        if (f.name === v || f.alias === v) {
+          return f;
+        }
+      }
+      return undefined;
     },
 
     // getFields
     _getFields: function (layer) {
       var fields = [];
       if (this.tab.advStat && this.tab.advStat.stats &&
+        this.tab.advStat.stats.outFields &&
         this.tab.advStat.stats.outFields.length > 0) {
         array.forEach(this.tab.advStat.stats.outFields, function (obj) {
           fields.push(obj.expression);
@@ -308,16 +341,18 @@ define([
       if (this.specialFields[fldName]) {
         var fld = this.specialFields[fldName];
         if (fld.type === "esriFieldTypeDate") {
+          var _f;
           if (this.dateFields[fldName] !== 'undefined') {
-            var dFormat = this._getDateFormat(this.dateFields[fldName]);
+            var dFormat = this.dateFields[fldName];
             if (typeof (dFormat) !== undefined) {
-              value = new Date(fldValue).toLocaleDateString(navigator.language, dFormat);
+              _f = { dateFormat: dFormat };
             } else {
-              value = new Date(fldValue).toLocaleString();
+              _f = { dateFormat: 'longMonthDayYear' };
             }
           } else {
-            value = new Date(fldValue).toLocaleString();
+            _f = { dateFormat: 'longMonthDayYear' };
           }
+          value = utils.fieldFormatter.getFormattedDate(new Date(fldValue), _f);
         } else {
           var codedValues = fld.domain.codedValues;
           array.some(codedValues, function (obj) {
@@ -331,141 +366,12 @@ define([
       return value;
     },
 
-    _getDateFormat: function (dFormat) {
-      //default is Month Day Year
-      var options;
-      switch (dFormat) {
-        case "shortDate":
-          //12/21/1997
-          options = {
-            month: '2-digit',
-            day: '2-digit',
-            year: 'numeric'
-          };
-          break;
-        case "shortDateLE":
-          //21/12/1997
-          options = {
-            day: '2-digit',
-            month: '2-digit',
-            year: 'numeric'
-          };
-          break;
-        case "longMonthDayYear":
-          //December 21,1997
-          options = {
-            month: 'long',
-            day: '2-digit',
-            year: 'numeric'
-          };
-          break;
-        case "dayShortMonthYear":
-          //21 Dec 1997
-          options = {
-            day: '2-digit',
-            month: 'short',
-            year: 'numeric'
-          };
-          break;
-        case "longDate":
-          //Sunday, December 21, 1997
-          options = {
-            weekday: 'long',
-            month: 'long',
-            day: '2-digit',
-            year: 'numeric'
-          };
-          break;
-        case "shortDateLongTime":
-          //12/21/1997 6:00:00 PM
-          options = {
-            month: '2-digit',
-            day: '2-digit',
-            year: 'numeric',
-            hour: 'numeric',
-            minute: '2-digit',
-            second: '2-digit',
-            hour12: true
-          };
-          break;
-        case "shortDateLELongTime":
-          //21/12/1997 6:00:00 PM
-          options = {
-            day: '2-digit',
-            month: '2-digit',
-            year: 'numeric',
-            hour: 'numeric',
-            minute: '2-digit',
-            second: '2-digit',
-            hour12: true
-          };
-          break;
-        case "shortDateShortTime":
-          //12/21/1997 6:00 PM
-          options = {
-            month: '2-digit',
-            day: '2-digit',
-            year: 'numeric',
-            hour: 'numeric',
-            minute: '2-digit',
-            hour12: true
-          };
-          break;
-        case "shortDateLEShortTime":
-          //21/12/1997 6:00 PM
-          options = {
-            day: '2-digit',
-            month: '2-digit',
-            year: 'numeric',
-            hour: 'numeric',
-            minute: '2-digit',
-            hour12: true
-          };
-          break;
-        case "shortDateShortTime24":
-          //12/21/1997 18:00
-          options = {
-            month: '2-digit',
-            day: '2-digit',
-            year: 'numeric',
-            hour: 'numeric',
-            minute: '2-digit',
-            hour12: false
-          };
-          break;
-        case "shortDateLEShortTime24":
-          //21/12/1997 18:00
-          options = {
-            day: '2-digit',
-            month: '2-digit',
-            year: 'numeric',
-            hour: 'numeric',
-            minute: '2-digit',
-            hour12: false
-          };
-          break;
-        case "longMonthYear":
-          //December 1997
-          options = {
-            month: 'long',
-            year: 'numeric'
-          };
-          break;
-        case "shortMonthYear":
-          //Dec 1997
-          options = {
-            month: 'short',
-            year: 'numeric'
-          };
-          break;
-        case "year":
-          //1997
-          options = {
-            year: 'numeric'
-          };
-          break;
-      }
-      return options;
+    isURL: function (v) {
+      return /(https?:\/\/|ftp:)/g.test(v);
+    },
+
+    isEmail: function (v) {
+      return /\S+@\S+\.\S+/.test(v);
     },
 
     // get distance

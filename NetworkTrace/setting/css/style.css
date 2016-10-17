@@ -585,6 +585,11 @@
     width: 200px;
 }
 
+.jimu-widget-NetworkTrace-setting .esriCTSelectField
+{
+    width: 200px;
+}
+
 .jimu-widget-NetworkTrace-setting .claro .dijitTextBox .dijitInputInner
 {
     font-size: 12px;

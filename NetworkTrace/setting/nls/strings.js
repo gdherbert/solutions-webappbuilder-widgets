@@ -53,6 +53,7 @@
     // Outage details
     outagePanel: {
       bufferDistance: "Buffer distance",
+      bufferType: "Buffer type",
       esriUnits: "Units",
       outageFieldTagName: "Save summary options",
       outage: "Overview",
@@ -60,7 +61,7 @@
       OutageFieldName: "Field name",
       OutageParamName: "Parameter name",
       fieldMappingHint_1: "Select a field to store a summary of the output parameter.",
-      fieldMappingHint_2: "Currently only the count of items is supported.",
+      fieldMappingHint_2: "Currently only the count of resulting features and string results are supported.",
       esriMeters: "Meters",
       esriMiles: "Miles",
       esriFeets: "Feet",
@@ -111,6 +112,8 @@
     },
     // Hint text
     hintText: {
+      valueOfResult: " The value of this results will be stored.",
+      countOfResults:" The count of the resulting features will be stored.",
       inputTypeHint: "Hint: Select the type/purpose of this input parameter.",
       labelTextHint: "Hint: Provide display label for result panel of output parameter.",
       skippableHint: "Hint: Enable/disable skip functionality for this output parameter.",

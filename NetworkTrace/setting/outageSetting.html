@@ -17,6 +17,19 @@
             data-dojo-props="required: true,  invalidMessage:'Enter numeric value only.'"
             value="0">
     </div>
+    <div class="field" title="${nls.outagePanel.bufferType}">
+        <label title="${nls.outagePanel.bufferType}">
+            ${nls.outagePanel.bufferType}
+        </label>
+        <select class="esriCTSelectField"
+                data-dojo-attach-point="overviewBufferType"
+                data-dojo-type="dijit/form/Select"
+                data-dojo-props="required: true,  invalidMessage:'Select an option.'">
+            <option value="Convex" selected="selected">Convex Hull</option>
+            <option value="Buffer">Buffer</option>
+
+        </select>
+    </div>
     <div class="field" title="${nls.outagePanel.esriUnits}">
         <label title="${nls.outagePanel.esriUnits}">
             ${nls.outagePanel.esriUnits}</label>

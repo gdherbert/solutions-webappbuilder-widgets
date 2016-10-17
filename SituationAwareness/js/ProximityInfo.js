@@ -51,6 +51,7 @@ define([
       this.specialFields = {};
       this.dateFields = {};
       this.config = parent.config;
+      //this._graphics = [];
     },
 
     // update for incident
@@ -98,7 +99,7 @@ define([
           var featureSet = defResults[r][1];
           var layer = tabLayers[r];
           var fields = this._getFields(layer);
-          if (featureSet) {
+          if (featureSet && featureSet.features) {
             var graphics = featureSet.features;
             for (var g = 0; g < graphics.length; g++) {
               var gra = graphics[g];
@@ -136,6 +137,7 @@ define([
 
       if (results.length === 0 && this.buffer) {
         this.container.innerHTML = this.parent.nls.noFeaturesFound;
+        return;
       } else if (results.length === 0 && !this.buffer) {
         this.container.innerHTML = this.parent.nls.defaultTabMsg;
       }
@@ -143,9 +145,9 @@ define([
 
       var numberOfDivs = results.length + 1;
       var tpc = domConstruct.create("div", {
-        id: "SA_tpc",
-        style: "width:" + (numberOfDivs * 220) + "px;"
+        style: "width:" + ((numberOfDivs * 220) + 20) + "px;"
       }, this.container);
+
       domClass.add(tpc, "SAT_tabPanelContent");
 
       var div_results_extra = domConstruct.create("div", {}, tpc);
@@ -166,34 +168,46 @@ define([
         displayFields = this.tab.advStat.stats.outFields;
       } else {
         displayFields = [];
-        if (this.parent.map.itemInfo.itemData.operationalLayers.length > 0) {
-          var mapLayers = this.parent.map.itemInfo.itemData.operationalLayers;
-          array.forEach(mapLayers, lang.hitch(this, function(layer) {
-            if(layer.title === this.tab.layers) {
-              if(typeof(layer.popupInfo) !== 'undefined') {
-                array.forEach(layer.popupInfo.fieldInfos, lang.hitch(this, function (field) {
-                  if (field.visible) {
-                    var fieldObj = {};
-                    fieldObj.value = 0;
-                    fieldObj.expression = field.fieldName;
-                    fieldObj.label = field.label;
-                    displayFields.push(fieldObj);
-                  }
-                }));
-              } else {
-                array.forEach(layer.layerObject.fields, lang.hitch(this, function(field) {
+        if (this.tab.tabLayers.length > 0) {
+          var mapLayers = this.tab.tabLayers;
+          array.forEach(mapLayers, lang.hitch(this, function (layer) {
+            //if (layer.title === this.tab.layers || layer.name === this.tab.layers) {
+            if(typeof(layer.popupInfo) !== 'undefined') {
+              array.forEach(layer.popupInfo.fieldInfos, lang.hitch(this, function (field) {
+                if (field.visible) {
                   var fieldObj = {};
                   fieldObj.value = 0;
-                  fieldObj.expression = field.name;
-                  fieldObj.label = field.alias;
+                  fieldObj.expression = field.fieldName;
+                  fieldObj.label = field.label;
                   displayFields.push(fieldObj);
-                }));
-              }
+                }
+              }));
+            } else if (layer.infoTemplate) {
+              array.forEach(layer.infoTemplate.info.fieldInfos, lang.hitch(this, function (field) {
+                if (field.visible) {
+                  var fieldObj = {};
+                  fieldObj.value = 0;
+                  fieldObj.expression = field.fieldName;
+                  fieldObj.label = field.label;
+                  displayFields.push(fieldObj);
+                }
+              }));
             }
+            else {
+              var l = layer.layerObject ? layer.layerObject : layer;
+              array.forEach(l.fields, lang.hitch(this, function(field) {
+                var fieldObj = {};
+                fieldObj.value = 0;
+                fieldObj.expression = field.name;
+                fieldObj.label = field.alias;
+                displayFields.push(fieldObj);
+              }));
+            }
+            //}
           }));
         }
       }
-
+      var resultWidth = 0;
       for (var i = 0; i < results.length; i++) {
         var num = i + 1;
         var gra = results[i];
@@ -216,7 +230,29 @@ define([
               for (var ij = 0; ij < displayFields.length; ij++) {
                 var field = displayFields[ij];
                 if (field.expression === prop) {
-                  info += utils.sanitizeHTML(this._getFieldValue(prop, attr[prop]) + "<br/>");
+                  var fVal = this._getFieldValue(prop, attr[prop]);
+                  var value;
+                  if (typeof (fVal) !== 'undefined' && fVal !== null) {
+                    value = utils.stripHTML(fVal.toString());
+                  }else{
+                    value = "";
+                  }
+                  var label;
+                  if (gra._layer && gra._layer.fields) {
+                    var cF = this._getField(gra._layer.fields, prop);
+                    if (cF) {
+                      label = cF.alias;
+                    }
+                  }
+                  if (typeof (label) === 'undefined' || label in ['', ' ', null, undefined]) {
+                    label = prop;
+                  }
+                  if (this.isURL(value)) {
+                    value = '<a href="' + value + '" target="_blank" style="color: inherit;">' + label + '</a>';
+                  } else if (this.isEmail(value)) {
+                    value = '<a href="mailto:' + value + '" style="color: inherit;">' + label + '</a>';
+                  }
+                  info += (value + "<br/>");
                   c += 1;
                 }
               }
@@ -224,9 +260,7 @@ define([
           }
         }
 
-        var div = domConstruct.create("div", {
-          id: "SA_Feature_" + num
-        }, tpc);
+        var div = domConstruct.create("div", {}, tpc);
         domClass.add(div, "SATcolRec");
 
         var div1 = domConstruct.create("div", {}, div);
@@ -253,9 +287,12 @@ define([
         }
 
         var div5 = domConstruct.create("div", {
+          'class': 'SATcolWrap',
           innerHTML: info
         }, div);
         domClass.add(div5, "SATcolInfo");
+
+        resultWidth += div.clientWidth;
 
         var sls = new SimpleLineSymbol(SimpleLineSymbol.STYLE_SOLID,
           new Color.fromString(this.parent.config.color), 1);
@@ -268,16 +305,52 @@ define([
         symText.setOffset(0, -4);
         this.graphicsLayer.add(new Graphic(loc, sms, attr));
         this.graphicsLayer.add(new Graphic(loc, symText, attr));
-
+        //this._graphics.push(new Graphic(loc, sms, attr));
+        //this._graphics.push(new Graphic(loc, symText, attr));
       }
 
+      domStyle.set(tpc, 'width', ((resultWidth + 240) + numberOfDivs) + 'px');
     },
+
+    //WORKS but is slightly different than Summary and grouped...in many cases the results would be the same but I think there could be a...
+    //possibility of there being a difference...only keeping in case the group doesn't like the default jimu date format
+    //_exportToCSV: function (results) {
+    //  if (results.length === 0) {
+    //    return false;
+    //  }
+    //  var name;
+    //  if(this.tab.label){
+    //    name = this.tab.label;
+    //  }else{
+    //    name = this.tab.layers;
+    //  }
+    //  var data = [];
+    //  var cols = [];
+    //  array.forEach(results, lang.hitch(this, function (gra) {
+    //    var formatVals = lang.clone(gra.attributes);
+    //    for (var field in gra.attributes) {
+    //      if (this.specialFields && this.specialFields.hasOwnProperty(field)) {
+    //        formatVals[field] = this._getFieldValue(field, gra.attributes[field]);
+    //      }
+    //    }
+    //    data.push(formatVals);
+    //  }));
+    //  for (var prop in data[0]) {
+    //    cols.push(prop);
+    //  }
+    //  CSVUtils.exportCSV(name, data, cols);
+    //},
 
     _exportToCSV: function (results) {
       if (results.length === 0) {
         return false;
       }
-      var name = this.tab.tabLayers[0].id;
+      var name;
+      if (this.tab.label) {
+        name = this.tab.label;
+      } else {
+        name = this.tab.layers;
+      }
       var data = [];
       var cols = [];
       array.forEach(results, function (gra) {
@@ -286,13 +359,73 @@ define([
       for (var prop in data[0]) {
         cols.push(prop);
       }
-      CSVUtils.exportCSV(name, data, cols);
+
+      this.summaryLayer = this.tab.tabLayers[0];
+
+      var fields = this.summaryLayer.fields;
+      if (this.summaryLayer && this.summaryLayer.loaded && fields) {
+        var options = {};
+        if (this.parent.opLayers && this.parent.opLayers._layerInfos) {
+          var layerInfo = this.parent.opLayers.getLayerInfoById(this.summaryLayer.id);
+          if (layerInfo) {
+            options.popupInfo = layerInfo.getPopupInfo();
+          }
+        }
+        var _outFields = [];
+        cols_loop:
+          for (var ii = 0; ii < cols.length; ii++) {
+            var col = cols[ii];
+            var found = false;
+            var field;
+            fields_loop:
+              for (var iii = 0; iii < fields.length; iii++) {
+                field = fields[iii];
+                if (field.name === col) {
+                  found = true;
+                  break fields_loop;
+                }
+              }
+            if (found) {
+              _outFields.push(field);
+            } else {
+              _outFields.push({
+                'name': col,
+                alias: col,
+                show: true,
+                type: "esriFieldTypeString"
+              });
+            }
+          }
+
+        options.datas = data;
+        options.fromClient = false;
+        options.withGeometry = false;
+        options.outFields = _outFields;
+        options.formatDate = true;
+        options.formatCodedValue = true;
+        options.formatNumber = false;
+        CSVUtils.exportCSVFromFeatureLayer(name, this.summaryLayer, options);
+      } else {
+        //This does not handle value formatting
+        CSVUtils.exportCSV(name, data, cols);
+      }
+    },
+
+    _getField: function (fields, v) {
+      for (var i = 0; i < fields.length; i++) {
+        var f = fields[i];
+        if (f.name === v || f.alias === v) {
+          return f;
+        }
+      }
+      return undefined;
     },
 
     // getFields
     _getFields: function (layer) {
       var fields = [];
       if (this.tab.advStat && this.tab.advStat.stats &&
+        this.tab.advStat.stats.outFields &&
         this.tab.advStat.stats.outFields.length > 0) {
         array.forEach(this.tab.advStat.stats.outFields, function (obj) {
           fields.push(obj.expression);
@@ -368,16 +501,18 @@ define([
       if (this.specialFields[fldName]) {
         var fld = this.specialFields[fldName];
         if (fld.type === "esriFieldTypeDate") {
+          var _f;
           if (this.dateFields[fldName] !== 'undefined') {
-            var dFormat = this._getDateFormat(this.dateFields[fldName]);
+            var dFormat = this.dateFields[fldName];
             if (typeof (dFormat) !== undefined) {
-              value = new Date(fldValue).toLocaleDateString(navigator.language, dFormat);
+              _f = { dateFormat: dFormat };
             } else {
-              value = new Date(fldValue).toLocaleString();
+              _f = { dateFormat: 'longMonthDayYear' };
             }
           } else {
-            value = new Date(fldValue).toLocaleString();
+            _f = { dateFormat: 'longMonthDayYear' };
           }
+          value = utils.fieldFormatter.getFormattedDate(new Date(fldValue), _f);
         } else {
           var codedValues = fld.domain.codedValues;
           array.some(codedValues, function (obj) {
@@ -391,141 +526,12 @@ define([
       return value;
     },
 
-    _getDateFormat: function (dFormat) {
-      //default is Month Day Year
-      var options;
-      switch (dFormat) {
-        case "shortDate":
-          //12/21/1997
-          options = {
-            month: '2-digit',
-            day: '2-digit',
-            year: 'numeric'
-          };
-          break;
-        case "shortDateLE":
-          //21/12/1997
-          options = {
-            day: '2-digit',
-            month: '2-digit',
-            year: 'numeric'
-          };
-          break;
-        case "longMonthDayYear":
-          //December 21,1997
-          options = {
-            month: 'long',
-            day: '2-digit',
-            year: 'numeric'
-          };
-          break;
-        case "dayShortMonthYear":
-          //21 Dec 1997
-          options = {
-            day: '2-digit',
-            month: 'short',
-            year: 'numeric'
-          };
-          break;
-        case "longDate":
-          //Sunday, December 21, 1997
-          options = {
-            weekday: 'long',
-            month: 'long',
-            day: '2-digit',
-            year: 'numeric'
-          };
-          break;
-        case "shortDateLongTime":
-          //12/21/1997 6:00:00 PM
-          options = {
-            month: '2-digit',
-            day: '2-digit',
-            year: 'numeric',
-            hour: 'numeric',
-            minute: '2-digit',
-            second: '2-digit',
-            hour12: true
-          };
-          break;
-        case "shortDateLELongTime":
-          //21/12/1997 6:00:00 PM
-          options = {
-            day: '2-digit',
-            month: '2-digit',
-            year: 'numeric',
-            hour: 'numeric',
-            minute: '2-digit',
-            second: '2-digit',
-            hour12: true
-          };
-          break;
-        case "shortDateShortTime":
-          //12/21/1997 6:00 PM
-          options = {
-            month: '2-digit',
-            day: '2-digit',
-            year: 'numeric',
-            hour: 'numeric',
-            minute: '2-digit',
-            hour12: true
-          };
-          break;
-        case "shortDateLEShortTime":
-          //21/12/1997 6:00 PM
-          options = {
-            day: '2-digit',
-            month: '2-digit',
-            year: 'numeric',
-            hour: 'numeric',
-            minute: '2-digit',
-            hour12: true
-          };
-          break;
-        case "shortDateShortTime24":
-          //12/21/1997 18:00
-          options = {
-            month: '2-digit',
-            day: '2-digit',
-            year: 'numeric',
-            hour: 'numeric',
-            minute: '2-digit',
-            hour12: false
-          };
-          break;
-        case "shortDateLEShortTime24":
-          //21/12/1997 18:00
-          options = {
-            day: '2-digit',
-            month: '2-digit',
-            year: 'numeric',
-            hour: 'numeric',
-            minute: '2-digit',
-            hour12: false
-          };
-          break;
-        case "longMonthYear":
-          //December 1997
-          options = {
-            month: 'long',
-            year: 'numeric'
-          };
-          break;
-        case "shortMonthYear":
-          //Dec 1997
-          options = {
-            month: 'short',
-            year: 'numeric'
-          };
-          break;
-        case "year":
-          //1997
-          options = {
-            year: 'numeric'
-          };
-          break;
-      }
-      return options;
+    isURL: function (v) {
+      return /(https?:\/\/|ftp:)/g.test(v);
+    },
+
+    isEmail: function (v) {
+      return /\S+@\S+\.\S+/.test(v);
     },
 
     // get distance

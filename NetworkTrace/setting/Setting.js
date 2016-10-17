@@ -213,13 +213,15 @@ define([
       // loop for checking gptask type is GPFeatureRecordSetLayer or not
       for (i = 0; i < gpTaskParameters.length; i++) {
         // if gp task is not GPFeatureRecordSetLayer then flag to false
-        if (gpTaskParameters[i].dataType !==
-          "GPFeatureRecordSetLayer") {
-          recordSetValCheckFlag = false;
-        }
+        //if (gpTaskParameters[i].dataType !==
+        //  "GPFeatureRecordSetLayer") {
+        //  recordSetValCheckFlag = false;
+        //}
         // if gp task parameter type is of input type
         if (gpTaskParameters[i].direction ===
-          "esriGPParameterDirectionInput") {
+          "esriGPParameterDirectionInput" &&
+          gpTaskParameters[i].dataType ===
+            "GPFeatureRecordSetLayer") {
           inputParametersArr.push(gpTaskParameters[i]);
         }
       }
@@ -312,14 +314,24 @@ define([
       if (gpTaskParameters) {
         this.inputParametersArray = [];
         this.outputParametersArray = [];
+        this.outputStrings = [];  
         // loop for creating input and output parameters array
         for (i = 0; i < gpTaskParameters.length; i++) {
           if (gpTaskParameters[i].direction ===
-            "esriGPParameterDirectionInput") {
+            "esriGPParameterDirectionInput" &&
+            gpTaskParameters[i].dataType ===
+              "GPFeatureRecordSetLayer") {
             this.inputParametersArray.push(gpTaskParameters[i]);
           } else if (gpTaskParameters[i].direction ===
-            "esriGPParameterDirectionOutput") {
+            "esriGPParameterDirectionOutput" &&
+            gpTaskParameters[i].dataType ===
+              "GPFeatureRecordSetLayer") {
             this.outputParametersArray.push(gpTaskParameters[i]);
+          } else if (gpTaskParameters[i].direction ===
+            "esriGPParameterDirectionOutput" &&
+            gpTaskParameters[i].dataType ===
+              "GPString") {
+            this.outputStrings.push(gpTaskParameters[i]);
           }
         }
       }
@@ -830,6 +842,7 @@ define([
       param = {
         "nls": this.nls,
         "data": this.outputParametersArray,
+        "outputStrings": this.outputStrings,
         "folderUrl": this.folderUrl,
         "map": this.map,
         "overviewConfig": overviewConfig
