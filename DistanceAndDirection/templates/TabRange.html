@@ -35,7 +35,7 @@
         </div>
 
         <div class="controlGroup">
-            <label>Ring Interval</label>
+            <label>Distance Between Rings</label>
             <div class="controlItem">
                 <input data-dojo-attach-point="ringIntervalInput"
                        type="text"
@@ -48,7 +48,7 @@
                   max: 100000,
                   places: 0
                 },
-                 rangeMessage:'Invalid ring interval',
+                 rangeMessage:'Invalid Distance Between Rings',
                  invalidMessage: 'Enter a numeric value'
                " />
                 <select data-dojo-attach-point="ringIntervalUnitsDD"
@@ -59,7 +59,7 @@
                     <option value="kilometers">Kilometers</option>
                     <option value="miles">Miles</option>
                     <option value="meters" selected="selected">Meters</option>
-                    <option value="nautical-miles">Nautical Mile</option>
+                    <option value="nautical-miles">Nautical Miles</option>
                     <option value="yards">Yards</option>
                 </select>
             </div>
@@ -75,10 +75,10 @@
                            value="3"
                            data-dojo-props="constraints:{
                   min:0,
-                  max: 100,
+                  max: 360,
                   places: 0
                 },
-                 rangeMessage:'Invalid number of radials',
+                 rangeMessage:'Invalid number of radials the maximum allowed is 360',
                  invalidMessage: 'Enter a numeric value'
                " />
                 </div>

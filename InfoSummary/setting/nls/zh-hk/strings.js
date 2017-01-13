@@ -23,7 +23,7 @@ define({
   "defineClusterSymbol": "指定叢集符號",
   "rdoEsri": "選擇符號",
   "rdoLayerIcon": "使用地圖符號",
-  "rdoCustomIcon": "使用圖像",
+  "rdoCustomIcon": "使用圖片",
   "editCustomSymbol": "編輯自訂符號",
   "editCustomIcon": "編輯自訂圖示",
   "missingRefreshValue": "請提供重新整理間隔值。",
@@ -48,5 +48,7 @@ define({
   "hidePanelHelp": "啟用/停用主面板顯示。",
   "continuousRefreshHelp": "附註: 將連續發生圖徵集合重新整理。",
   "panelCountOptionHelp": "啟用/停用圖徵計數的顯示。",
-  "panelIconOptionHelp": "啟用/停用主面板上的標誌顯示。"
+  "panelIconOptionHelp": "啟用/停用主面板上的標誌顯示。",
+  "rdoGroupByField": "按欄位",
+  "rdoGroupByRenderer": "按渲染器"
 });

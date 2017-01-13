@@ -22,7 +22,7 @@ define({
   "chkCluster": "Activer l’agrégation",
   "defineClusterSymbol": "Spécifier le symbole de groupement",
   "rdoEsri": "Choisir un symbole",
-  "rdoLayerIcon": "Utiliser le symbole de la carte",
+  "rdoLayerIcon": "Utiliser un symbole de carte",
   "rdoCustomIcon": "Utiliser une image",
   "editCustomSymbol": "Modifier le symbole personnalisé",
   "editCustomIcon": "Modifier l’icône personnalisée",
@@ -48,5 +48,7 @@ define({
   "hidePanelHelp": "Activez/désactivez l'affichage du volet principal.",
   "continuousRefreshHelp": "Remarque : l'actualisation des collections d'entités se produira en continu.",
   "panelCountOptionHelp": "Activez/désactivez l'affichage du nombre d'entités.",
-  "panelIconOptionHelp": "Activez/désactivez l'affichage d'un logo dans le volet principal."
+  "panelIconOptionHelp": "Activez/désactivez l'affichage d'un logo dans le volet principal.",
+  "rdoGroupByField": "par champ",
+  "rdoGroupByRenderer": "par moteur de rendu"
 });

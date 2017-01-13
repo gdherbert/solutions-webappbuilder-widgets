@@ -21,7 +21,7 @@ define({
   "rdoCustom": "Utilizar una imagen",
   "chkCluster": "Habilitar clustering",
   "defineClusterSymbol": "Especificar símbolo de cluster",
-  "rdoEsri": "Elija un símbolo",
+  "rdoEsri": "Elegir un símbolo",
   "rdoLayerIcon": "Utilizar símbolo de mapa",
   "rdoCustomIcon": "Utilizar una imagen",
   "editCustomSymbol": "Editar símbolo personalizado",
@@ -48,5 +48,7 @@ define({
   "hidePanelHelp": "Habilita o deshabilita la visualización del panel principal.",
   "continuousRefreshHelp": "Nota: la actualización del conjunto de entidades se producirá de manera continua.",
   "panelCountOptionHelp": "Habilita o deshabilita la visualización de los recuentos de entidades.",
-  "panelIconOptionHelp": "Habilita o deshabilita la visualización de un logotipo en el panel principal."
+  "panelIconOptionHelp": "Habilita o deshabilita la visualización de un logotipo en el panel principal.",
+  "rdoGroupByField": "por campo",
+  "rdoGroupByRenderer": "por renderizador"
 });

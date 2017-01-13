@@ -89,10 +89,6 @@
             <div data-dojo-attach-point="customIconPlaceholder" class="customPlaceholder"></div>
           </div>
         </div>
-        <input type="file"
-               accept="image/png, image/jpeg, image/bmp, image/gif"
-               data-dojo-attach-point="fileInput"
-               class="fileInput">
       </div>
     </div>
     <div data-dojo-attach-point="panelFeatureDisplayContainer" class="panelFeatureContainer">
@@ -114,10 +110,25 @@
           <input data-dojo-type="dijit/form/CheckBox" data-dojo-attach-point="chkGroup" title="${nls.chkGroup}" data-dojo-attach-event="onChange:_chkGroupChanged" />
           <span class="label" data-dojo-attach-point="chkGroupLabel">${nls.chkGroup}</span>
         </div>
-        <div data-dojo-attach-point="groupFieldOptions" class="groupFieldOptions">
+        <div data-dojo-attach-point="groupByOptions" class="groupByOptions">
+          <div class="jimu-r-row padTop10" data-dojo-attach-point="grpField">
+            <div class="rdoGroupField" data-dojo-attach-point="div_rdoGroupField">
+              <input name="c" data-dojo-type="dijit/form/RadioButton" data-dojo-attach-point="rdoGroupField" data-dojo-attach-event="onChange:_rdoGroupByFieldChanged" title="${nls.rdoGroupByField}" />
+              <span class="label" data-dojo-attach-point="rdoGroupFieldLabel">${nls.rdoGroupByField}</span>
+            </div>
+            <div data-dojo-attach-point="groupFieldOptions" class="groupFieldOptions">
+            </div>
+          </div>
+
+          <div class="jimu-r-row padTop10" data-dojo-attach-point="grpRenderer">
+            <div class="rdoGroupField" data-dojo-attach-point="div_rdoGroupRenderer">
+              <input name="c" data-dojo-type="dijit/form/RadioButton" data-dojo-attach-point="rdoGroupRenderer" data-dojo-attach-event="onChange:_rdoGroupByRendererChanged" title="${nls.rdoGroupByRenderer}" />
+              <span class="label" data-dojo-attach-point="rdoGroupRendererLabel">${nls.rdoGroupByRenderer}</span>
+            </div>
+          </div>
         </div>
-      </div>
     </div>
+  </div>
   </div>
   <!--Footer-->
   <div class="footer padTop20">

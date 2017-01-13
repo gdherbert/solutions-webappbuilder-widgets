@@ -38,7 +38,6 @@ define([
    'esri/symbols/TextSymbol',
    'esri/symbols/Font',
    'esri/renderers/SimpleRenderer',
-   'esri/request',
    'esri/tasks/query',
    'esri/tasks/QueryTask',
    'esri/symbols/jsonUtils',
@@ -67,7 +66,6 @@ define([
   TextSymbol,
   Font,
   SimpleRenderer,
-  esriRequest,
   Query,
   QueryTask,
   jsonUtils,
@@ -372,16 +370,26 @@ define([
             var i, j;
             for (i = 0, j = this.queryIDs.length; i < j; i += max) {
               var ids = this.queryIDs.slice(i, i + max);
-              queries.push(esriRequest({
-                "url": url + "/query",
-                "content": {
-                  "f": "json",
-                  "outFields": this._fieldNames.join(),
-                  "objectids": ids.join(),
-                  "returnGeometry": "true",
-                  "outSR": this._map.spatialReference.wkid
-                }
-              }));
+
+              var _q = new Query();
+              _q.outFields = this._fieldNames;
+              _q.objectIds = ids;
+              _q.returnGeometry = true;
+              _q.outSpatialReference = this._map.spatialReference;
+              var _qt = new QueryTask(url);
+              queries.push(_qt.execute(_q));
+
+              //changed from this to query Task for issue #7743
+              //queries.push(esriRequest({
+              //  "url": url + "/query",
+              //  "content": {
+              //    "f": "json",
+              //    "outFields": this._fieldNames.join(),
+              //    "objectids": ids.join(),
+              //    "returnGeometry": "true",
+              //    "outSR": this._map.spatialReference.wkid
+              //  }
+              //}));
             }
 
             this._features = [];
@@ -397,7 +405,7 @@ define([
                       if (queryResults[i][1].features) {
                         for (var ii = 0; ii < queryResults[i][1].features.length; ii++) {
                           var item = queryResults[i][1].features[ii];
-                          if (typeof (item.geometry) !== 'undefined') {
+                          if (typeof (item.geometry) !== 'undefined' && item.geometry !== null && item.geometry) {
                             var geom = new Point(item.geometry.x, item.geometry.y, sr);
                             var gra = new Graphic(geom);
                             gra.setAttributes(item.attributes);
@@ -888,14 +896,29 @@ define([
 
         var path = this.symbolData.s;
         if (path && path.indexOf("${appPath}") > -1) {
-          path = this.symbolData.s.replace("${appPath}", window.location.origin + window.location.pathname);
+          var pathName = window.location.pathname.replace('index.html', '');
+          path = this.symbolData.s.replace("${appPath}", window.location.origin + pathName);
         } else if (this.symbolData.s) {
           path = this.symbolData.s;
         } else {
           path = this.icon.imageData;
         }
         if (path && this.symbolData.iconType === "CustomIcon") {
-          this.psym = new PictureMarkerSymbol(path, size - 6, size - 6);
+          var _h, _w;
+          if (this.symbolData.symbol && this.symbolData.symbol.height) {
+            _h = this.symbolData.symbol.height;
+          }
+          if (this.symbolData.symbol && this.symbolData.symbol.width) {
+            _w = this.symbolData.symbol.width;
+          }
+          if (_h && _w) {
+            _h = _w > _h ? _w : _h;
+            _w = _h;
+          } else {
+            _h = this.symbolData.icon.height ? this.symbolData.icon.height : size2;
+            _w = this.symbolData.icon.width ? this.symbolData.icon.width : size2;
+          }
+          this.psym = new PictureMarkerSymbol(path, _h, _w);
         } else if (path && this.symbolData.iconType === "LayerIcon") {
           this.psym = jsonUtils.fromJson(this.symbolData.symbol);
         } else {

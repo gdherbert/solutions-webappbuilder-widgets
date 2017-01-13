@@ -33,7 +33,7 @@ define({
   "refreshUnit": "minuuttia.",
   "symbolOptions": "Symboli",
   "panelFeatureDisplay": "Paneeli",
-  "chkGroup": "Ryhmäkohteet",
+  "chkGroup": "Ryhmittele kohteet",
   "selectField": "Kenttä",
   "fieldLabel": "Tunnusteksti",
   "addField": "Lisää kenttä",
@@ -48,5 +48,7 @@ define({
   "hidePanelHelp": "Ota käyttöön tai poista käytöstä pääpaneelinäyttö.",
   "continuousRefreshHelp": "Huomautus: Kohdekokoelma päivitetään jatkuvasti.",
   "panelCountOptionHelp": "Ota käyttöön tai poista käytöstä kohdemäärän näyttö.",
-  "panelIconOptionHelp": "Ota käyttöön tai poista käytöstä pääpaneelin logon näyttö."
+  "panelIconOptionHelp": "Ota käyttöön tai poista käytöstä pääpaneelin logon näyttö.",
+  "rdoGroupByField": "kentän mukaan",
+  "rdoGroupByRenderer": "hahmontimen mukaan"
 });

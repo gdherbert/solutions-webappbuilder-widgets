@@ -19,16 +19,30 @@
       ${nls.general_setting_Label}
     </div>
     <hr />
+
+    <div class="jimu-r-row pad-row15">
+      <div class="col-1-3">
+        <span class="label">${nls.incident_label}: </span>
+      </div>
+      <div class="col-1-3">
+        <span class="label">${nls.locate_incident_label}: </span>
+      </div>
+    </div>
+    <div class="jimu-r-row pad-row0">
+      <div class="col-1-3">
+        <input data-dojo-attach-point="incident_label" title="${nls.incident_label}" 
+               class="validationBox2" data-dojo-type="dijit/form/ValidationTextBox" />
+      </div>
+      <div class="col-1-3">
+        <input data-dojo-attach-point="locate_incident_label" title="${nls.locate_incident_label}" 
+               class="validationBox2" data-dojo-type="dijit/form/ValidationTextBox" />
+      </div>
+    </div>
+
     <div class="jimu-r-row pad-row15">
       <div class="col-1-4">
         <span class="label">${nls.units_text_lbl}: </span>
         <select data-dojo-attach-point="selectUnits" class="selectUnits" data-dojo-type="dijit/form/Select">
-          <option value="miles" selected="selected">${nls.miles}</option>
-          <option value="kilometers">${nls.kilometers}</option>
-          <option value="feet">${nls.feet}</option>
-          <option value="meters">${nls.meters}</option>
-          <option value="yards">${nls.yards}</option>
-          <option value="nauticalMiles">${nls.nauticalMiles}</option>
         </select>
       </div>
       <div class="col-1-4 settingAlign">
@@ -53,7 +67,7 @@
     </div>
     <div class="jimu-r-row pad-row0">
       <div class="col-1-3">
-        <input data-dojo-attach-point="buffer_lbl" title="${nls.buffer_text_lbl}" data-dojo-type="dijit/form/TextBox" />
+        <input data-dojo-attach-point="buffer_lbl" title="${nls.buffer_text_lbl}" class="validationBox2" data-dojo-type="dijit/form/ValidationTextBox" />
       </div>
       <div class="col-1-3">
         <input data-dojo-attach-point="buffer_min" title="${nls.buffer_min_lbl}" data-dojo-type="dijit/form/NumberTextBox" />
@@ -84,18 +98,52 @@
   </div>
   <!-- Save Options-->
   <div data-dojo-attach-point="div_special_tab" class="jimu-r-row">
-    <div>
+    <div class="jimu-r-row">
       <div class="label general-setting-Label">
         ${nls.save_label}
       </div>
       <hr />
-      <div class="pad-row15">
+      <div class="jimu-r-row pad-row15">
         <input data-dojo-attach-point="chk_save" title="${nls.save_checkbox}" data-dojo-type="dijit/form/CheckBox" />
         <span class="label">${nls.save_checkbox}</span>
-        <select data-dojo-attach-point="selectSaveLayer" data-dojo-type="dijit/form/Select" disabled="disabled"></select>
+        <div class="jimu-r-row div_edit_options pad-row15" data-dojo-attach-point="editOptions">
+          <table>
+            <tr>
+              <td class="td-padding">
+                <input data-dojo-attach-point="chk_point_save" title="${nls.save_point_checkbox}" data-dojo-type="dijit/form/CheckBox" />
+                <span class="label">${nls.save_point_checkbox}</span>
+              </td>
+              <td class="td-padding">
+                <div data-dojo-attach-point="div_selectPointSaveLayer">
+                  <select class="select-width" data-dojo-attach-point="selectPointSaveLayer" data-dojo-type="dijit/form/Select"></select>
+                </div>
+              </td>
+            </tr>
+            <tr>
+              <td class="td-padding">
+                <input data-dojo-attach-point="chk_line_save" title="${nls.save_line_checkbox}" data-dojo-type="dijit/form/CheckBox" />
+                <span class="label">${nls.save_line_checkbox}</span>
+              </td>
+              <td class="td-padding">
+                <div data-dojo-attach-point="div_selectLineSaveLayer">
+                  <select class="select-width" data-dojo-attach-point="selectLineSaveLayer" data-dojo-type="dijit/form/Select"></select>
+                </div>
+              </td>
+            </tr>
+            <tr>
+              <td class="td-padding">
+                <input data-dojo-attach-point="chk_poly_save" title="${nls.save_poly_checkbox}" data-dojo-type="dijit/form/CheckBox" />
+                <span class="label">${nls.save_poly_checkbox}</span>
+              </td>
+              <td class="td-padding">
+                <div data-dojo-attach-point="div_selectPolySaveLayer">
+                  <select class="select-width" data-dojo-attach-point="selectPolySaveLayer" data-dojo-type="dijit/form/Select"></select>
+                </div>
+              </td>
+            </tr>
+          </table>
+        </div>
       </div>
-    </div>
-    <div data-dojo-attach-point="tpd" class="tpd">
     </div>
   </div>
   <!-- CSV Options-->
@@ -120,6 +168,17 @@
     <div class="chk_display">
       <input data-dojo-attach-point="chk_display" title="${nls.display_checkbox}" data-dojo-type="dijit/form/CheckBox" />
       <span class="label display-checkbox">${nls.display_checkbox}</span>
+    </div>
+  </div>
+  <!-- Snapshot Options-->
+  <div class="jimu-r-row" data-dojo-attach-point="div_snapshot_tab">
+    <div class="label general-setting-Label">
+      ${nls.snapshot_label}
+    </div>
+    <hr />
+    <div class="chk_snapshot">
+      <input data-dojo-attach-point="chk_snapshot" title="${nls.snapshot_checkbox}" data-dojo-type="dijit/form/CheckBox" />
+      <span class="label snapshot-checkbox">${nls.snapshot_checkbox}</span>
     </div>
   </div>
 </div>

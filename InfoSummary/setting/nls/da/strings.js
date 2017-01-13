@@ -48,5 +48,7 @@ define({
   "hidePanelHelp": "Aktivér/deaktivér visning af hovedpanel.",
   "continuousRefreshHelp": "Bemærk: Opdatering af objektsamling forekommer kontinuerligt.",
   "panelCountOptionHelp": "Aktivér/deaktivér visning af objekttællinger.",
-  "panelIconOptionHelp": "Aktivér/deaktivér visning af et logo på hovedpanelet."
+  "panelIconOptionHelp": "Aktivér/deaktivér visning af et logo på hovedpanelet.",
+  "rdoGroupByField": "efter felt",
+  "rdoGroupByRenderer": "efter gengivelse"
 });

@@ -29,9 +29,9 @@
   margin-left: 10px;
 }
 
-.jimu-widget-SAT-setting .tpd {
+/*.jimu-widget-SAT-setting .tpd {
   margin-right: 15px;
-}
+}*/
 
 .jimu-widget-SAT-setting .chk_display {
   padding-top: 15px; 
@@ -39,6 +39,15 @@
 }
 
 .jimu-widget-SAT-setting .display-checkbox {
+  padding-bottom: 15px;
+}
+
+.jimu-widget-SAT-setting .chk_snapshot {
+  padding-top: 15px; 
+  padding-bottom: 15px;
+}
+
+.jimu-widget-SAT-setting .snapshot-checkbox {
   padding-bottom: 15px;
 }
 
@@ -58,9 +67,19 @@
   margin-top: 8px;
 }
 
+.jimu-widget-SAT-setting .btn-add-disabled {
+  opacity: .6;
+  cursor: default;
+}
+
 .jimu-widget-SAT .validationBox {
 
 }
+
+.jimu-widget-SAT .validationBox2 {
+
+}
+
 
 .jimu-widget-SAT-setting .btn-add-section .btn-add-icon {
   height: 100%;
@@ -190,8 +209,8 @@
     text-align: left;
     text-overflow: ellipsis;
     overflow: hidden;
-    max-width: 165px;
-    min-width: 165px;
+    max-width: 155px;
+    min-width: 155px;
 }
 
 .jimu-widget-SAT-setting .display-options{
@@ -200,11 +219,11 @@
   vertical-align: middle;
 }
 
-.jimu-widget-SAT-setting .template-picker-on{
+.jimu-widget-SAT-setting .display-on{
   display: block;
 }
 
-.jimu-widget-SAT-setting .template-picker-of{
+.jimu-widget-SAT-setting .display-off{
   display: none;
 }
 
@@ -222,5 +241,31 @@
 
 .jimu-widget-SAT-setting .pad-top20 {
   padding-top: 20px;
+}
+
+.jimu-widget-SAT-setting .div_edit_options {
+  padding-left: 10px;
+}
+
+.jimu-rtl .jimu-widget-SAT-setting .div_edit_options {
+  padding-right: 10px;
+}
+
+.jimu-widget-SAT-setting .edit_options {
+  padding-top: 15px;
+}
+
+.jimu-widget-SAT-setting .td-padding {
+  padding-bottom: 10px;
+  padding-left: 10px;
+}
+
+.jimu-rtl .jimu-widget-SAT-setting .td-padding {
+  padding-bottom: 10px;
+  padding-right: 10px;
+}
+
+.jimu-widget-SAT-setting .select-width {
+  width: 100%;
 }
 

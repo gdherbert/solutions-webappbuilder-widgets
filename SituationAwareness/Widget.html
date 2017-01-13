@@ -13,34 +13,37 @@
     </div>
 
     <!--Panel Container -->
-    <div data-dojo-attach-point="panelContainer" class="panelContainer">
+    <div data-dojo-attach-point="panelContainer" class="panelContainer jimu-main-background">
       <!-- Panel Incident -->
       <div data-dojo-attach-point="innerBL" class="innerBL" data-dojo-attach-event="onclick:_navLeft"></div>
       <div data-dojo-attach-point="SA_tabPanel0" class="SAT_tabPanel">
-        <div class="SAT_tabPanelContent" style="width: 660px">
-          <div data-dojo-attach-point="incidentsLocate" class="SATcol">
-            <div class="label">
-              ${nls.locate_incident}
+        <div class="SAT_tabPanelContent" style="min-width: 680px">
+          <div data-dojo-attach-point="incidentsLocate" class="SATcolLocate" style="width:auto; min-width:220px">
+            <div data-dojo-attach-point="locateIncident" class="label locateIncident"></div>
+            <div data-dojo-attach-point="clearIncident" class="label clearIncident" data-dojo-attach-event="onclick:_clear">
+              ${nls.clearIncident}
             </div>
             <br />
-            <div class="colBar">
-              <div data-dojo-attach-point="imgContainer">
-                <span class="btn32"> <img data-dojo-attach-point="SA_btn0"> </img> </span>
-                <span class="btn32"> <img data-dojo-attach-point="SA_btn1"> </img> </span>
-                <span class="btn32"> <img data-dojo-attach-point="SA_btn2"> </img> </span>
+            <div class="locateIncidentContainer">
+              <div class="colBar SATdrawCol">
+                <div data-dojo-attach-point="imgContainer" class="imgContainer">
+                  <span class="btn32 displayTC"> <img class="btn32img" data-dojo-attach-point="SA_btn0"> </img> </span>
+                  <span class="btn32 displayTC"> <img class="btn32img" data-dojo-attach-point="SA_btn1"> </img> </span>
+                  <span class="btn32 displayTC"> <img class="btn32img" data-dojo-attach-point="SA_btn2"> </img> </span>
+                </div>
               </div>
-              <span class="btn32 btnClear" data-dojo-attach-event="onclick:_clear"> <img data-dojo-attach-point="SA_btn3"> </img> </span>
+              <div class="bufferIncidentContainer">
+                <div class="bufferControlsContainer">
+                  <div data-dojo-attach-point="buffer_lbl" class="label bufferLabel"></div>          
+                  <div class="spinnerValueDIV">
+                    <input data-dojo-attach-point="spinnerValue" data-dojo-type="dijit/form/NumberSpinner" class="spinnerValue" name="spinnerValue" value="15" />
+                    <div data-dojo-attach-point="buffer_lbl_unit" class="label bufferUnit"></div>
+                  </div>       
+                </div>
+              </div>
             </div>
           </div>
-          <div class="SATcol">
-            <div data-dojo-attach-point="buffer_lbl" class="label"></div>
-            <br />
-            <div class="colBar">
-              <div data-dojo-attach-point="horizontalSliderDiv"></div>
-              <div class="sliderValueDIV">
-                <input data-dojo-attach-point="sliderValue" data-dojo-type="dijit/form/TextBox" class="sliderValue" name="sliderValue" value="15" />
-              </div>
-            </div>
+          <div data-dojo-attach-point="saveOptions" class="SATcol2">
           </div>
           <div data-dojo-attach-point="div_reverse_geocoding" class="SATcol reverseGeocodingDIV">
             <div class="label">

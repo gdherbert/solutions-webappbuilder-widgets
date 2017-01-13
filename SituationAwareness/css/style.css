@@ -4,7 +4,7 @@
   left: 0px;
   right: 0px;
   bottom: 0px;
-  height: 150px !important;
+  height: 155px !important;
   display: block;
   z-index: 100 !important;
 }
@@ -39,7 +39,7 @@
   height: 35px; 
   opacity: 1;
   cursor: pointer;
-  bottom: 40px;
+  bottom: 30px;
 }
 
 .jimu-widget-SAT .innerBR {
@@ -65,7 +65,7 @@
   height: 35px; 
   opacity: 1;
   cursor: pointer;
-  bottom: 40px;
+  bottom: 30px;
 }
 
 .jimu-widget-SAT .rounded {
@@ -95,20 +95,15 @@
   width:100%;
 }
 
-.jimu-widget-SAT .sliderValue {
-  width: 60px;
+.jimu-widget-SAT .spinnerValue {
+  width: 80px;
   align: left;
-}
-
-.jimu-widget-SAT .sliderValueDIV {
-  text-align: center; 
-  margin-top: -4px;
 }
 
 .jimu-widget-SAT .panelBottom {
   position: absolute;
   width: 100%;
-  height: 150px;
+  height: 155px;
   left: 0px;
   top: 0px;
   text-align: center;
@@ -131,20 +126,21 @@
   top: 0px;
   left: 0px;
   right: 0px;
-  height: 40px;
-  line-height: 40px;
+  height: 30px;
+  line-height: 30px;
   overflow: hidden;
-  /*background-color: #393939;
-  background-color: rgba(0, 0, 0, 0.25);*/
+  /*for the darker color*/
   border-bottom: 1px solid #353535;
   border-bottom: 1px solid rgba(0, 0, 0, 0.3);
+  /*for the lighter color*/
+  /*border-bottom: 1px solid #d2dae2;*/
 }
 
 .jimu-widget-SAT .SA_panelFooterContent {
   position: absolute;
   left: 0px;
   right: 24px;
-  height: 40px;
+  height: 30px;
   overflow-x: hidden;
   overflow-y: hidden;
   display: block;
@@ -161,8 +157,8 @@
   left: auto;
   right: 0px;
   width: 24px;
-  height: 40px;
-  line-height: 40px;
+  height: 30px;
+  line-height: 30px;
   text-align: center;
   display: block;
   cursor: pointer;
@@ -178,8 +174,8 @@
   left: auto;
   right: 24px;
   width: 34px;
-  height: 40px;
-  line-height: 40px;
+  height: 30px;
+  line-height: 30px;
   cursor: pointer;
   background-image: url('images/nav_right.png');
   background-repeat: no-repeat;
@@ -199,8 +195,8 @@
   left: 0px;
   right: auto;
   /*width: 18px;*/
-  height: 40px;
-  line-height: 40px;
+  height: 30px;
+  line-height: 30px;
   cursor: pointer;
   background-image: url('images/nav_left.png');
   background-repeat: no-repeat;
@@ -222,9 +218,10 @@
 
 .jimu-widget-SAT .panelContainer {
   position: absolute;
-  top: 40px;
+  top: 30px;
   width: 100%;
-  height: 110px;
+  /*height: 110px;*/
+  height: 125px;
   overflow: hidden;
   display: block;
 }
@@ -234,7 +231,8 @@
   top: 10px;
   left: 0px;
   right: 0px;
-  height: 100px;
+  /*height: 100px;*/
+  height: 115px;
   display: none;
   overflow: auto;
 }
@@ -242,7 +240,8 @@
 .jimu-widget-SAT .SAT_tabPanelContent {
   position: absolute;
   top: 0px;
-  height: 80px;
+  /*height: 80px;*/
+  height: 100px;
   white-space: nowrap;
   display: block;
   user-select: none;
@@ -251,12 +250,35 @@
   -webkit-user-select: none;
   -o-user-select: none;
 }
+
+/*table will allign to the bottom rather than the top*/
+.jimu-widget-SAT .locateIncidentContainer {
+  display: flex;
+  float: left;
+  margin-top: 20px;
+}
+
+.jimu-rtl .jimu-widget-SAT .locateIncidentContainer {
+  display: flex;
+  float: right;
+  margin-top: 20px;
+}
+
+.jimu-widget-SAT .bufferIncidentContainer {
+  display: table-cell;
+}
+
+.jimu-widget-SAT .bufferControlsContainer {
+  float: left; 
+  padding-left: 20px;
+}
+
 /* TABS */
 
 .jimu-widget-SAT .SA_SAT_tabs {
   position: absolute;
   white-space: nowrap;
-  height: 40px;
+  height: 30px;
   padding: 0px;
   overflow-x: visible;
   overflow-y: hidden;
@@ -267,14 +289,11 @@
   max-width: 220px;
   overflow: hidden;
   text-overflow: ellipsis;
-  height: 40px;
+  height: 30px;
   float: left;
-  line-height: 40px;
+  line-height: 30px;
   font-size: 13px;
-  padding: 0 10px 0 35px;
-  background-image: url('images/tab.png');
-  background-repeat: no-repeat;
-  background-position: left center;
+  padding: 0 30px 0 30px;
   cursor: pointer;
   user-select: none;
   -moz-user-select: none;
@@ -282,6 +301,10 @@
   -webkit-user-select: none;
   -o-user-select: none;
   opacity: .85;
+  /*border-right: 1px solid rgba(255, 255, 255, 0.5);*/
+  /*border-right: 1px solid rgba(0, 0, 0, 0.3)*/
+  /*according to the attached spec sheet*/
+  border-right: 1px solid #d2dae2;
 }
 
 .jimu-rtl .jimu-widget-SAT .SATTab {
@@ -289,32 +312,26 @@
 }
 
 .jimu-widget-SAT .active {
-  color: #ffffff;
+  /*color: #ffffff;*/
   background-color: #353535;
   background-color: rgba(0, 0, 0, 0.3);
-  background-image: url('images/tabon.png');
-  background-position: left center;
-  background-repeat: no-repeat;
   opacity: 1;
+  border-top: 2px solid #15a4fa;
 }
 
 .jimu-widget-SAT .activeBlack {
-  color: #ffffff;
+  /*color: #ffffff;*/
   background-color: #353535;
-  background-image: url('images/tabon.png');
-  background-position: left center;
-  background-repeat: no-repeat;
   opacity: 1;
+  border-top: 2px solid #15a4fa;
 }
 /* INCIDENTS */
 
 .jimu-widget-SAT .SATcol {
   float: left;
-  height: 80px;
+  height: 100px;
   width: 220px;
   border-left: none;
-  border-right: 1px solid #ffffff;
-  border-right: 1px solid rgba(255, 255, 255, 0.5);
   margin-left: 0;
   padding: 0 10px;
   user-select: none;
@@ -322,6 +339,75 @@
   -khtml-user-select: none;
   -webkit-user-select: none;
   -o-user-select: none;
+  overflow: hidden;
+}
+
+.jimu-rtl .jimu-widget-SAT .SATcol {
+  float: right;
+  border-right: none;
+  overflow: hidden;
+}
+
+.jimu-widget-SAT .SATcolExport {
+  float: left;
+  height: 100px;
+  width: 65px;
+  border-left: none;
+  margin-left: 0;
+  padding: 0 10px;
+  user-select: none;
+  -moz-user-select: none;
+  -khtml-user-select: none;
+  -webkit-user-select: none;
+  -o-user-select: none;
+  overflow: hidden;
+}
+
+.jimu-rtl .jimu-widget-SAT .SATcolExport {
+  float: right;
+  border-right: none;
+  overflow: hidden;
+}
+
+.jimu-widget-SAT .lightThemeBorder{
+  border-right: 1px solid #353535;
+  border-right: 1px solid rgba(0, 0, 0, 0.3);
+}
+
+.jimu-widget-SAT .darkThemeBorder{
+  border-right: 1px solid #ffffff;
+  border-right: 1px solid rgba(255, 255, 255, 0.5);
+}
+
+.jimu-rtl .jimu-widget-SAT .lightThemeBorder{
+  border-left: 1px solid #353535;
+  border-left: 1px solid rgba(0, 0, 0, 0.3);
+}
+
+.jimu-rtl .jimu-widget-SAT .darkThemeBorder{
+  border-left: 1px solid #ffffff;
+  border-left: 1px solid rgba(255, 255, 255, 0.5);
+}
+
+.jimu-widget-SAT .SATcolLocate {
+  float: left;
+  height: 100px;
+  width: 220px;
+  border-left: none;
+  margin-left: 0;
+  padding: 0 30px;
+  user-select: none;
+  -moz-user-select: none;
+  -khtml-user-select: none;
+  -webkit-user-select: none;
+  -o-user-select: none;
+  overflow: hidden;
+}
+
+.jimu-rtl .jimu-widget-SAT .SATcolLocate {
+  float: right;
+  border-right: none;
+  overflow: hidden;
 }
 
 .jimu-widget-SAT .SATcolWrap {
@@ -330,39 +416,34 @@
   word-wrap: break-word;
 }
 
-.jimu-widget-SAT .SATcolSave {
+.jimu-widget-SAT .SATcol2 {
   float: left;
-  height: 90px;
-  width: 220px;
+  height: 100px;
   border-left: none;
-  border-right: 1px solid #ffffff;
-  border-right: 1px solid rgba(255, 255, 255, 0.5);
-  margin-left: 0;
-  padding: 0 5px;
+  margin-left: 15px;
+  padding: 0 10px;
+  user-select: none;
+  -moz-user-select: none;
+  -khtml-user-select: none;
+  -webkit-user-select: none;
+  -o-user-select: none;
   overflow: hidden;
+  display: table;
 }
 
-.jimu-rtl .jimu-widget-SAT .SATcolSave {
+.jimu-rtl .jimu-widget-SAT .SATcol2 {
   float: right;
-  border-left: 1px solid #ffffff;
-  border-left: 1px solid rgba(255, 255, 255, 0.5);
   border-right: none;
+  overflow: hidden;
+  margin-right: 15px;
 }
 
-.jimu-rtl .jimu-widget-SAT .SATcol {
-  float: right;
-  border-left: 1px solid #ffffff;
-  border-left: 1px solid rgba(255, 255, 255, 0.5);
-  border-right: none;
-}
-
+/*TODO see what this is form not sure iframe it's height needs to change*/
 .jimu-widget-SAT .SATcolSmall {
   float: left;
   height: 90px;
   width: 165px;
   border-left: none;
-  border-right: 1px solid #ffffff;
-  border-right: 1px solid rgba(255, 255, 255, 0.5);
   margin-left: 0;
   padding: 0 20px;
   overflow: hidden;
@@ -371,8 +452,6 @@
 
 .jimu-rtl .jimu-widget-SAT .SATcolSmall {
   float: right;
-  border-left: 1px solid #ffffff;
-  border-left: 1px solid rgba(255, 255, 255, 0.5);
   border-right: none;
 }
 
@@ -388,78 +467,39 @@
 }
 
 .jimu-widget-SAT .SATcol .colBar {
-  position: relative;
-  /*text-align: left;*/
-
   height: 32px;
-  display: block;
+  display: table-cell;
+  width: 130px;
 }
 
-.jimu-widget-SAT .SATcolSave .colBar {
-  position: relative;
-  /*text-align: left;*/
-
-  height: 69px;
+.jimu-widget-SAT .SATdrawCol {
   display: block;
-}
-
-.jimu-widget-SAT .btn32 {
   float: left;
-  width: 32px;
-  height: 32px;
-  padding: 0;
-  color: #ffffff;
-  background-color: #393939;
-  background-color: rgba(0, 0, 0, 0.25);
-  border-radius: 2px;
-  display: block;
-  margin-right: 8px;
-  cursor: pointer;
 }
 
-.jimu-widget-SAT .btn32Save {
-  float: left;
-  width: 32px;
-  height: 32px;
-  padding: 0;
-  color: #ffffff;
-  background-color: #393939;
-  background-color: rgba(0, 0, 0, 0.25);
-  border-radius: 2px;
+.jimu-rtl .jimu-widget-SAT .SATdrawCol {
   display: block;
-  margin-right: 6px;
-  cursor: pointer;
-}
-
-.jimu-widget-SAT .btn32SaveDisabled {
-  float: left;
-  width: 32px;
-  height: 32px;
-  padding: 0;
-  color: #999999;
-  background-color: #999999;
-  border-radius: 2px;
-  display: block;
-  margin-right: 6px;
-  cursor:default;
-}
-
-.jimu-rtl .jimu-widget-SAT .btn32 {
   float: right;
 }
 
-.jimu-rtl .jimu-widget-SAT .btn32Save {
-  float: right;
+.jimu-widget-SAT .displayTC{
+  display: table-cell;
 }
 
-.jimu-widget-SAT .btn32:hover {
-  background-color: #262626;
-  background-color: rgba(0, 0, 0, 0.5);
+.jimu-widget-SAT .displayTR{
+  display: table-row;
 }
 
-.jimu-widget-SAT .btn32Save:hover {
-  background-color: #262626;
-  background-color: rgba(0, 0, 0, 0.5);
+.jimu-widget-SAT .displayT{
+  display: table;
+}
+
+.jimu-widget-SAT .display-on{
+  display: block;
+}
+
+.jimu-widget-SAT .display-off{
+  display: none;
 }
 
 .jimu-widget-SAT .btnOn {
@@ -469,30 +509,43 @@
   background-color: rgba(0, 0, 0, 0.5);
 }
 
-.jimu-widget-SAT .btn32 img {
+.jimu-widget-SAT .btn32 {
+  width: 32px;
+  height: 32px;
+  border-radius: 2px;
+  margin-right: 15px;
+  cursor: pointer;
+}
+
+.jimu-widget-SAT .btn32img {
   padding: 8px;
+  /*background-color: #393939;
+  background-color: rgba(0, 0, 0, 0.25);*/
 }
 
-.jimu-widget-SAT .btn32Save img {
+.jimu-widget-SAT .lightThemeBackground{
+  background-color: #353535;
+  background-color: rgba(0, 0, 0, 0.3);
+}
+
+.jimu-widget-SAT .darkThemeBackground{
+
+}
+
+.jimu-widget-SAT .btn32img:hover {
+  background-color: #262626;
+  background-color: rgba(0, 0, 0, 0.5);
+}
+
+.jimu-widget-SAT .btn32imgBlack {
   padding: 8px;
+  /*background-color: #353535;*/
+  /*background-color: rgba(0, 0, 0, 0.25);*/
 }
 
-.jimu-widget-SAT .btn32SaveDisabled img {
-  padding: 8px;
-}
-
-.jimu-widget-SAT .btnClear {
-  background-color: #bb0000;
-  margin-left: 16px;
-}
-
-.jimu-rtl .jimu-widget-SAT .btnClear {
-  margin-right: 16px;
-  margin-left: 0;
-}
-
-.jimu-widget-SAT .btnClear:hover {
-  background-color: #ff0000;
+.jimu-widget-SAT .btn32imgBlack:hover {
+  background-color: #262626;
+  /*background-color: rgba(0, 0, 0, 0.7);*/
 }
 
 .jimu-widget-SAT .dijitTextBox,
@@ -522,19 +575,37 @@
 }
 
 .jimu-widget-SAT .btnExport {
-  background-color: #393939;
-  background-color: rgba(0, 0, 0, 0.25);
+  /*background-color: #393939;
+  background-color: rgba(0, 0, 0, 0.25);*/
   border-radius: 2px;
-  padding: 10px 44px 10px 10px;
+  padding: 10px 10px 10px 10px;
   background-image: url('images/download.png');
   background-repeat: no-repeat;
   background-position: right center;
   cursor: pointer;
+  height: 40px;
 }
 
 .jimu-widget-SAT .btnExport:hover {
   background-color: #262626;
   background-color: rgba(0, 0, 0, 0.5);
+}
+
+.jimu-widget-SAT .btnExportBlack {
+  /*background-color: #353535;*/
+  /*background-color: rgba(0, 0, 0, 1);*/
+  border-radius: 2px;
+  padding: 10px 10px 10px 10px;
+  background-image: url('images/download.png');
+  background-repeat: no-repeat;
+  background-position: right center;
+  cursor: pointer;
+  height: 40px;
+}
+
+.jimu-widget-SAT .btnExportBlack:hover {
+  background-color: #262626;
+  /*background-color: rgba(0, 0, 0, 0.7);*/
 }
 
 .jimu-widget-SAT .download {
@@ -554,6 +625,44 @@
   background-repeat: no-repeat;
   background-position: center 10px;
 }
+
+.jimu-widget-SAT .snapshot {
+  background-image: url('images/snapshot.png');
+  background-repeat: no-repeat;
+  background-position: center center;
+  height: 32px;
+  width: 32px;
+}
+
+.jimu-widget-SAT .snapshotProcessing {
+  background-image: url('images/processing.gif');
+  background-repeat: no-repeat;
+  background-position: center center;
+  height: 32px;
+  width: 32px;
+}
+
+.jimu-widget-SAT .downloadAll {
+  background-image: url('images/download_all.png');
+  background-repeat: no-repeat;
+  background-position: center center;
+  height: 32px;
+  width: 32px;
+}
+
+.jimu-widget-SAT .save {
+  background-image: url('images/save.png');
+  background-repeat: no-repeat;
+  background-position: center center;
+  height: 32px;
+  width: 32px;
+}
+
+.jimu-widget-SAT .btnDisabled {
+  opacity: .5;
+  cursor: default;
+}
+
 /* SUMMARY */
 
 .jimu-widget-SAT .colSummary {
@@ -571,8 +680,6 @@
   float: left;
   height: 100%;
   border-left: none;
-  border-right: 1px solid #ffffff;
-  border-right: 1px solid rgba(255, 255, 255, 0.5);
   margin-left: 0;
   padding: 0 10px;
   text-align: left;
@@ -588,8 +695,6 @@
 
 .jimu-rtl .jimu-widget-SAT .SATcolRec {
   float: right;
-  border-left: 1px solid #ffffff;
-  border-left: 1px solid rgba(255, 255, 255, 0.5);
   border-right: none;
   text-align: right;
 }
@@ -605,8 +710,8 @@
   position: absolute;
   width: 26px;
   height: 26px;
-  background-color: #4c4c4c;
-  color: #ffffff;
+  background-color: #393939;
+  background-color: rgba(0, 0, 0, 0.25);
   line-height: 26px;
   text-align: center;
   border-radius: 13px;
@@ -647,150 +752,116 @@
   display: block;
   overflow: hidden;
 }
-/* Slider */
 
-.claro .dijitSlider {
-  background: transparent;
-  border: 0 none;
-  -webkit-border-radius: 3px;
-  border-radius: 3px;
-  padding: 0;
+.jimu-widget-SAT .noFeaturesActive {
+  opacity: .5;
+  cursor: default;
 }
 
-.claro .dijitSliderBar {
-  border-style: solid;
-  outline: 1px;
-}
-
-.claro .dijitRuleLabelsContainer {
-  color: #2b2e34;
-}
-
-.claro .dijitSliderDisabled {
-  opacity: 0.65;
-  -ms-filter: "progid:DXImageTransform.Microsoft.Alpha(Opacity=65)";
-  filter: alpha(opacity=65);
-}
-
-.claro .dijitRuleLabelsContainerH {
-  padding: 8px 0 !important;
-  color: #6e6e6e !important;
-}
-
-.claro .dijitSliderBarH,
-.claro .dijitSliderBumperH {
-  height: 4px;
-}
-
-.claro .dijitSlider .dijitSliderLeftBumper {
-  -webkit-border-radius: 2px 0 0 2px;
-  border-radius: 2px 0 0 2px;
-  border-width: 1px 0 1px 1px;
-  margin-left: 4px;
-}
-
-.claro .dijitSlider .dijitSliderRightBumper {
-  -webkit-border-radius: 0 2px 2px 0;
-  border-radius: 0 2px 2px 0;
-  border-width: 1px 1px 1px 0;
-  margin-left: -2px;
-  margin-right: 4px;
-}
-
-.claro .dijitSlider .dijitSliderProgressBarH {
-  border-color: #ebebeb;
-  background-color: #ebebeb;
-  background-image: none;
-  -webkit-box-shadow: none;
-  box-shadow: none;
-}
-
-.claro .dijitSlider .dijitSliderLeftBumper {
-  border-color: #ebebeb;
-  background-color: #ebebeb;
-  background-image: none;
-  -webkit-box-shadow: none;
-  box-shadow: none;
-  -webkit-border-radius: 2px 0 0 2px;
-  border-radius: 2px 0 0 2px;
-}
-
-.claro .dijitSlider .dijitSliderRemainingBarH,
-.claro .dijitSlider .dijitSliderRightBumper {
-  border-color: #878787;
-  background-color: #878787;
-  -webkit-border-radius: 2px;
-  border-radius: 2px;
-}
-
-.claro .dijitSliderHover .dijitSliderProgressBarH,
-.claro .dijitSliderHover .dijitSliderLeftBumper {
-  border-color: #ebebeb;
-  background-color: #ebebeb;
-  background-image: none;
-  -webkit-box-shadow: none;
-  box-shadow: none;
-}
-
-.claro .dijitSliderFocused .dijitSliderProgressBarH,
-.claro .dijitSliderFocused .dijitSliderLeftBumper {
-  border-color: #ebebeb;
-  /*-webkit-border-radius: 2px 0 0 2px;
-  border-radius: 2px 0 0 2px;*/
-}
-
-.claro .dijitSliderFocused .dijitSliderRemainingBarH,
-.claro .dijitSliderFocused .dijitSliderRightBumper {
-  border-color: #878787;
-  background-color: #878787;
-  -webkit-box-shadow: none;
-  box-shadow: none;
-}
-
-.claro .dijitSliderImageHandle {
-  background: #ffffff;
-  -webkit-border-radius: 50%;
-  border-radius: 50%;
-  border: 0 none;
-  width: 16px;
-  height: 16px;
-  margin-top: -2px;
-  position: absolute;
-}
-
-.claro .dijitSliderImageHandle:after {
-  content: "";
-  display: block;
-  background: #6e6e6e;
-  -webkit-border-radius: 50%;
-  border-radius: 50%;
-  height: 8px;
-  width: 8px;
-  left: 4px;
-  top: 4px;
-  position: absolute;
-}
-
-.claro .dijitSliderDisabled.dijitSliderFocused .dijitSliderImageHandle:after {
+.jimu-widget-SAT .noFeatures {
   display: none;
-  outline: none;
 }
 
-.claro .dijitSliderDecrementIconH,
-.claro .dijitSliderIncrementIconH {
-  padding: 0;
-  height: 20px;
-  width: 20px;
-  background-color: transparent;
-  border: 0 none;
+.jimu-widget-SAT .locateIncident{
+  float: left;
 }
 
-.claro .dijitButtonText{
-  padding-left: 3px;
+.jimu-rtl .jimu-widget-SAT .locateIncident{
+  float: right;
+}
+
+.jimu-widget-SAT .clearIncident{
+  float: right; 
+  text-decoration: underline; 
+  cursor: pointer;
+}
+
+.jimu-rtl .jimu-widget-SAT .clearIncident{
+  float: left; 
+  text-decoration: underline; 
+  cursor: pointer;
+}
+
+.jimu-widget-SAT .imgContainer{
+  display: table;
+  width: 130px;
+  padding-top: 10px;
+}
+
+.jimu-widget-SAT .bufferLabel{
+  /*display: table-row;
+  margin-top: 10px;*/
+}
+
+.jimu-widget-SAT .spinnerValueDIV{
+  float: right;
+  margin-top: 8px;
+  margin-left: 4px; 
+  display: table-row;
+}
+
+.jimu-rtl .jimu-widget-SAT .spinnerValueDIV{
+  float: left;
+  margin-top: 8px;
+  margin-right: 4px; 
+  display: table-row;
+}
+
+.jimu-widget-SAT .bufferUnit{
+  display: inline;
+  margin-left: 4px; 
+  margin-top: 7px;
+}
+
+.jimu-widget-SAT .saveIncidentDiv{
+  position: absolute;
+  top: 0px;
+  left: 270px;
+  line-height: 26px;
+  font-size: 13px;
+}
+
+.jimu-rtl .jimu-widget-SAT .saveIncidentDiv{
+  position: absolute;
+  top: 0px;
+  right: 270px;
+  line-height: 26px;
+  font-size: 13px;
+}
+
+.jimu-widget-SAT .downlaodAllDiv{
+  position: absolute;
+  top: 35px;
+  left: 270px;
+  line-height: 26px;
+  font-size: 13px;
+}
+
+.jimu-rtl .jimu-widget-SAT .downlaodAllDiv{
+  position: absolute;
+  top: 35px;
+  right: 270px;
+  line-height: 26px;
+  font-size: 13px;
+}
+
+.jimu-widget-SAT .createSnapshotDiv{
+  position: absolute;
+  top: 70px;
+  left: 270px;
+  line-height: 26px;
+  font-size: 13px;
+}
+
+.jimu-rtl .jimu-widget-SAT .createSnapshotDiv{
+  position: absolute;
+  top: 70px;
+  right: 270px;
+  line-height: 26px;
+  font-size: 13px;
 }
 
 /*********about attributeInspector**********/
-
 
 .esriAttributeInspector .atiRichTextField{ 
 
@@ -809,6 +880,7 @@
      padding-top:2px;
      margin-right: 10px;
      display: inline-table;
+     background-image: none;
 }
 
 .esriAttributeInspector .atiButtons {

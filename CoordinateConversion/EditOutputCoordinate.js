@@ -86,7 +86,12 @@ define([
                 customFormat: null,
                 useCustom: false
             },
-            UTM: {
+            'UTM (Z)': {
+                defaultFormat: 'Z X Y',
+                customFormat: null,
+                useCustom: false
+            },
+            'UTM (H)': {
                 defaultFormat: 'ZH X Y',
                 customFormat: null,
                 useCustom: false

@@ -1,46 +1,74 @@
+///////////////////////////////////////////////////////////////////////////
+// Copyright © 2016 Esri. All Rights Reserved.
+//
+// Licensed under the Apache License Version 2.0 (the "License");
+// you may not use this file except in compliance with the License.
+// You may obtain a copy of the License at
+//
+//    http://www.apache.org/licenses/LICENSE-2.0
+//
+// Unless required by applicable law or agreed to in writing, software
+// distributed under the License is distributed on an "AS IS" BASIS,
+// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+// See the License for the specific language governing permissions and
+// limitations under the License.
+///////////////////////////////////////////////////////////////////////////
+
 define([
   'dojo/_base/declare',
   'dojo/_base/lang',
   'dojo/_base/Color',
   'dojo/_base/array',
   'dojo/DeferredList',
+  'dojo/Deferred',
   'dojo/dom-class',
   'dojo/dom-construct',
+  'dojo/dom-geometry',
   'dojo/dom-style',
   'dojo/on',
   'jimu/utils',
   'esri/geometry/geometryEngine',
-  'esri/geometry/Polyline',
   'esri/graphic',
+  'esri/Color',
   'esri/layers/FeatureLayer',
   'esri/symbols/SimpleMarkerSymbol',
   'esri/symbols/SimpleLineSymbol',
   'esri/symbols/Font',
   'esri/symbols/TextSymbol',
-  'esri/tasks/query'
+  'esri/tasks/query',
+  './analysisUtils'
 ], function (
   declare,
   lang,
   Color,
   array,
   DeferredList,
+  Deferred,
   domClass,
   domConstruct,
+  domGeom,
   domStyle,
   on,
   utils,
   geometryEngine,
-  Polyline,
   Graphic,
+  esriColor,
   FeatureLayer,
   SimpleMarkerSymbol,
   SimpleLineSymbol,
   Font,
   TextSymbol,
-  Query
+  Query,
+  analysisUtils
 ) {
 
   var closestInfo = declare('ClosestInfo', null, {
+
+    featureCount: 0,
+    mapServiceLayer: false,
+    loading: false,
+    queryOnLoad: false,
+    incidentCount: 0,
 
     constructor: function (tab, container, parent) {
       this.tab = tab;
@@ -51,43 +79,223 @@ define([
       this.map = parent.map;
       this.specialFields = {};
       this.dateFields = {};
-      //this._graphics = [];
+      this.config = parent.config;
+      this.baseLabel = tab.label !== "" ? tab.label : tab.layerTitle ? tab.layerTitle : tab.layers;
     },
 
-    updateForIncident: function (incident, distance, graphicsLayer) {
-      array.forEach(this.tab.tabLayers, lang.hitch(this, function (tab) {
-        if (typeof (tab.empty) !== 'undefined') {
-          var tempFL = new FeatureLayer(tab.url);
-          on(tempFL, "load", lang.hitch(this, function () {
-            this.tab.tabLayers = [tempFL];
-            this.processIncident(incident, distance, graphicsLayer);
-          }));
-        } else {
-          this.processIncident(incident, distance, graphicsLayer);
+    //TODO this.summaryFields does not seem to be used
+    //but I believe it could be...we really only need to get the fields once
+    //may need to get all fields and just the 3 dispaly fields seperately
+    // so we can ensure that download all and panel display have what the need
+    //but we should not have to do that so frequently
+
+    //TODO should the buffer be used in any way
+    //curently the calc and this new count is based on the distance from the incident only and
+    // does not consider the buffer.
+    //So it could be possible that the buffer distance exceeds the max distance defined in the config.
+    //This would mean that you have a feature in the buffer that is not returned...is this correct?
+    queryTabCount: function (incidents, buffers, updateNode, displayCount) { // jshint ignore:line
+      this.incidentCount = incidents.length;
+      var unit = this.parent.config.distanceUnits;
+      var unitCode = this.parent.config.distanceSettings[unit];
+      var distance = this.parent.config.maxDistance;
+
+      buffers = [];
+      for (var i = 0; i < incidents.length; i++) {
+        buffers.push(geometryEngine.buffer(incidents[i].geometry, distance, unitCode));
+      }
+      var tabLayers = [this.tab.tabLayers[0]];
+      if (this.mapServiceLayer && this.tab.tabLayers.length > 1) {
+        tabLayers = [this.tab.tabLayers[1]];
+      }
+      if (this.tab.tabLayers.length > 0) {
+        if (this.tab.tabLayers[0].url) {
+          if (this.tab.tabLayers[0].url.indexOf("MapServer") > -1) {
+            this.mapServiceLayer = true;
+            var tempFL;
+            if (typeof (this.tab.tabLayers[0].infoTemplate) !== 'undefined') {
+              this.summaryLayer = this.tab.tabLayers[0];
+              this.summaryFields = this._getFields(this.summaryLayer);
+              tempFL = new FeatureLayer(this.summaryLayer.url);
+              tempFL.infoTemplate = this.tab.tabLayers[0].infoTemplate;
+              tabLayers = [tempFL];
+              this.tab.tabLayers = tabLayers;
+              this._performQuery(incidents, buffers, updateNode, displayCount, tabLayers);
+            } else {
+              if (!this.loading) {
+                tempFL = new FeatureLayer(this.tab.tabLayers[0].url);
+                this.loading = true;
+                on(tempFL, "load", lang.hitch(this, function () {
+                  this.summaryLayer = tempFL;
+                  this.summaryFields = this._getFields(this.summaryLayer);
+                  var lID = this.tab.tabLayers[0].url.split("MapServer/")[1];
+                  var mapLayers = this.parent.map.itemInfo.itemData.operationalLayers;
+                  for (var i = 0; i < mapLayers.length; i++) {
+                    var lyr = mapLayers[i];
+                    if (typeof (lyr.layerObject) !== 'undefined') {
+                      if (lyr.layerObject.infoTemplates) {
+                        var infoTemplate = lyr.layerObject.infoTemplates[lID];
+                        if (infoTemplate) {
+                          tempFL.infoTemplate = infoTemplate.infoTemplate;
+                          break;
+                        }
+                      }
+                    }
+                  }
+                  tabLayers = [tempFL];
+                  this.tab.tabLayers = tabLayers;
+                  this.loading = false;
+                  this._performQuery(incidents, buffers, updateNode, displayCount, tabLayers);
+                }));
+              }
+            }
+          }
         }
+      }
+      if (!this.mapServiceLayer) {
+        this._performQuery(incidents, buffers, updateNode, displayCount, tabLayers);
+      }
+    },
+
+    //buffers will be populated with max dist from incidents
+    _performQuery: function (incidents, buffers, updateNode, displayCount, tabLayers) { // jshint ignore:line
+      var defArray = [];
+      var geom;
+      var prevArray;
+      var da;
+      var geoms = buffers;
+      this.summaryGeoms = geoms;
+      if (geoms.length > 0) {
+        for (var ii = 0; ii < geoms.length; ii++) {
+          geom = geoms[ii];
+          da = analysisUtils.createDefArray(tabLayers, geom);
+          if (ii === 0) {
+            defArray = da;
+            prevArray = da;
+          } else {
+            defArray = prevArray.concat(da);
+            prevArray = defArray;
+          }
+        }
+      }
+      var defList = new DeferredList(defArray);
+      defList.then(lang.hitch(this, function (defResults) {
+        var length = 0;
+        for (var r = 0; r < defResults.length; r++) {
+          var featureSet = defResults[r][1];
+          if (!isNaN(featureSet)) {
+            if (featureSet > 0) {
+              length += 1;
+            }
+          } else if (featureSet && featureSet.features) {
+            if (featureSet.features.length > 0) {
+              length += 1;
+            }
+          } else if (featureSet && typeof (featureSet.length) !== 'undefined') {
+            if (featureSet.length > 0) {
+              length += 1;
+            }
+          }
+        }
+        this.updateTabCount(length, updateNode, displayCount);
       }));
     },
 
-    // update for incident
-    processIncident: function (incident, distance, graphicsLayer) {
-      this.container.innerHTML = "";
-      domClass.add(this.container, "loading");
+    updateTabCount: function (count, updateNode, displayCount) {
+      this.featureCount = parseInt(count, 10) === 0 ? 0 : count;
+      analysisUtils.updateTabCount(this.featureCount, updateNode, displayCount, this.baseLabel, this.incidentCount);
+    },
+
+    updateForIncident: function (incidents, distance, graphicsLayer, snapShot, createSnapShot, downloadAll) {
+      this.incidentCount = incidents.length;
+      if (typeof (createSnapShot) !== 'undefined' && typeof (downloadAll) !== 'undefined') {
+        if (!createSnapShot) {
+          this.allFields = downloadAll;
+        } else {
+          this.allFields = true;
+        }
+      } else {
+        this.allFields = false;
+      }
+      var isSnapShot = typeof (snapShot) !== 'undefined';
+      var def;
+      array.forEach(this.tab.tabLayers, lang.hitch(this, function (tab) {
+        if (typeof (tab.empty) !== 'undefined' && tab.url) {
+          var tempFL = new FeatureLayer(tab.url);
+          on(tempFL, "load", lang.hitch(this, function () {
+            this.tab.tabLayers = [tempFL];
+            if (isSnapShot) {
+              def = new Deferred();
+              this.processIncident(incidents, distance, graphicsLayer, snapShot).then(lang.hitch(this, function (r) {
+                def.resolve(r);
+              }), lang.hitch(this, function (err) {
+                console.error(err);
+                def.reject(err);
+              }));
+            } else {
+              this.processIncident(incidents, distance, graphicsLayer, snapShot);
+            }
+          }));
+        } else {
+          if (isSnapShot) {
+            def = new Deferred();
+            this.processIncident(incidents, distance, graphicsLayer, snapShot).then(lang.hitch(this,
+              function (results) {
+              def.resolve(results);
+            }), lang.hitch(this, function (err) {
+              console.error(err);
+              def.reject(err);
+            }));
+          } else {
+            this.processIncident(incidents, distance, graphicsLayer, snapShot);
+          }
+        }
+      }));
+      if (isSnapShot) {
+        return def;
+      }
+    },
+
+    processIncident: function (incidents, distance, graphicsLayer, snapShot) {
+      this.incidents = incidents;
+      var def;
+      var isSnapShot = typeof (snapShot) !== 'undefined';
+      if (!isSnapShot) {
+        this.container.innerHTML = "";
+        domClass.add(this.container, "loading");
+      } else {
+        def = new Deferred();
+      }
       var results = [];
-      this.incident = incident;
+
       var unit = this.parent.config.distanceUnits;
       var unitCode = this.parent.config.distanceSettings[unit];
-      var bufferGeom = geometryEngine.buffer(incident.geometry, distance, unitCode);
+
+      var inc_buffers = [];
+      for (var j = 0; j < incidents.length; j++) {
+        var geom = incidents[j].geometry;
+        var bufferGeom = geometryEngine.buffer(geom, distance, unitCode);
+        inc_buffers.push({geometry: geom, buffer: bufferGeom});
+      }
+
       this.graphicsLayer = graphicsLayer;
-      this.graphicsLayer.clear();
+      if (this.graphicsLayer) {
+        this.graphicsLayer.clear();
+      }
 
       var tabLayers = this.tab.tabLayers;
       var defArray = [];
-      for (var i = 0; i < tabLayers.length; i++) {
-        var layer = tabLayers[i];
+      var layer = tabLayers[0];
+      var fields = this._getFields(layer);
+      for (var i = 0; i < inc_buffers.length; i++) {
         var query = new Query();
         query.returnGeometry = true;
-        query.geometry = bufferGeom;
-        query.outFields = this._getFields(layer);
+        query.geometry = inc_buffers[i].buffer;
+        if (this.parent.config.csvAllFields === "true" || this.parent.config.csvAllFields === true) {
+          query.outFields = ['*'];
+        } else {
+          query.outFields = fields;
+        }
         if (typeof (layer.queryFeatures) !== 'undefined') {
           defArray.push(layer.queryFeatures(query));
         }
@@ -95,327 +303,255 @@ define([
       var defList = new DeferredList(defArray);
       defList.then(lang.hitch(this, function (defResults) {
         for (var r = 0; r < defResults.length; r++) {
-          var featureSet = defResults[r][1];
-          var layer = tabLayers[r];
-          var fields = this._getFields(layer);
-          var graphics = featureSet.features;
-          if (graphics && graphics.length > 0) {
-            for (var g = 0; g < graphics.length; g++) {
-              var gra = graphics[g];
-              var geom = gra.geometry;
-              var dist = this._getDistance(incident.geometry, geom);
-              var newAttr = {
-                DISTANCE: dist
-              };
-              for (var f = 0; f < fields.length; f++) {
-                newAttr[fields[f]] = gra.attributes[fields[f]];
+          if (defResults[r][0]) {
+            var featureSet = defResults[r][1];
+            var graphics = featureSet.features;
+            var temp_graphics = [];
+            var inc_geom = inc_buffers[r].geometry;
+            if (graphics && graphics.length > 0) {
+              for (var g = 0; g < graphics.length; g++) {
+                //var gra = graphics[g];
+                var gra = new Graphic(graphics[g].toJson());
+                var geom = gra.geometry;
+                var p = inc_geom;
+                if (inc_geom.type !== 'point') {
+                  p = inc_geom.getExtent().getCenter();
+                }
+                var dist = analysisUtils.getDistance(p, geom, this.parent.config.distanceUnits);
+                var newAttr = {
+                  DISTANCE: dist
+                };
+                for (var f = 0; f < fields.length; f++) {
+                  newAttr[fields[f]] = gra.attributes[fields[f]];
+                }
+                if (this.config.csvAllFields === true || this.config.csvAllFields === "true") {
+                  //do nothing.  All fields in graphic will export.
+                  gra.attributes.DISTANCE = dist;
+                } else {
+                  gra.attributes = newAttr;
+                }
+                temp_graphics.push(gra);
               }
-              gra.attributes = newAttr;
+              temp_graphics.sort(analysisUtils.compareDistance);
+              results.push(temp_graphics[0]);
             }
-            graphics.sort(this._compareDistance);
-            results.push(graphics[0]);
+          } else {
+            if (defResults[r][1] && defResults[r][1].message) {
+              console.log(defResults[r][1].message);
+            }
           }
         }
-        this._processResults(results);
+        results.sort(analysisUtils.compareDistance);
+        if (!isSnapShot) {
+          this._processResults(results);
+        } else {
+          this._processResults(results, true).then(lang.hitch(this, function (finalResults) {
+            def.resolve(finalResults);
+          }));
+        }
+      }), lang.hitch(this, function (err) {
+        console.error(err);
+        def.reject(err);
       }));
+      if (isSnapShot) {
+        return def;
+      }
     },
 
-    // process results
-    _processResults: function (results) {
-      this.container.innerHTML = "";
-      domClass.remove(this.container, "loading");
-
-      if (results.length === 0) {
-        this.container.innerHTML = this.parent.nls.noFeaturesFound;
-        return;
+    _processResults: function (results, snapShot) {
+      var def;
+      var tpc;
+      var hasResults = results && results.length > 0;
+      if (hasResults) {
+        if (results[0].geometry.type !== 'point') {
+          for (var gi = results.length - 1; gi >= 0; gi--) {
+            var ext = results[gi].geometry.getExtent();
+            if (typeof (ext) === 'undefined') {
+              results.splice(gi, 1);
+            }
+          }
+        }
       }
+      if (snapShot) {
+        def = new Deferred();
+      } else {
+        this.container.innerHTML = "";
+        domClass.remove(this.container, "loading");
 
-      var tpc = domConstruct.create("div", {
-        style: "width:" + (results.length * 220) + "px;"
-      }, this.container);
+        if (hasResults) {
+          tpc = domConstruct.create("div", {
+            "class": "SAT_tabPanelContent"
+          }, this.container);
 
-      domClass.add(tpc, "SAT_tabPanelContent");
+          var div_results_extra = domConstruct.create("div", {}, tpc);
+          domClass.add(div_results_extra, "SATcolExport");
+          domClass.add(div_results_extra, this.parent.lightTheme ? 'lightThemeBorder' : 'darkThemeBorder');
+          var div_exp = domConstruct.create("div", {
+            title: this.parent.nls.downloadCSV
+          }, div_results_extra);
+          domClass.add(div_exp, "btnExport");
+          on(div_exp, "click", lang.hitch(this, this._exportToCSV, results));
+        }
+      }
 
       var unit = this.parent.config.distanceUnits;
       var units = this.parent.nls[unit];
+      var analysisResults = [];
+      var _w = 220;
+      if (hasResults) {
+        for (var i = 0; i < results.length; i++) {
+          var num = i + 1;
+          var gra = results[i];
+          var geom = gra.geometry;
+          var loc = geom;
+          if (geom.type !== "point") {
+            loc = geom.getExtent().getCenter();
+          }
+          var attr = gra.attributes;
 
-      //var dFormat = null;
-      for (var i = 0; i < results.length; i++) {
-        var num = i + 1;
-        var gra = results[i];
-        var geom = gra.geometry;
-        var loc = geom;
-        if (geom.type !== "point") {
-          loc = geom.getExtent().getCenter();
-        }
-        var attr = gra.attributes;
-        var distLbl;
-        if (this.incident.geometry.type === "point") {
-          var dist = attr.DISTANCE;
-          distLbl = units + ": " + Math.round(dist * 100) / 100;
-        }
-        var info = "";
-        var c = 0;
-        for (var prop in attr) {
-          if (prop !== "DISTANCE" && c < 3) {
-            var fVal = this._getFieldValue(prop, attr[prop]);
-            var value;
-            if (typeof (fVal) !== 'undefined' && fVal !== null) {
-              value = utils.stripHTML(fVal.toString());
-            } else {
-              value = "";
-            }
-            var label;
-            if (gra._layer && gra._layer.fields) {
-              var cF = this._getField(gra._layer.fields, prop);
-              if (cF) {
-                label = cF.alias;
+          var distLbl;
+          if (this.incidents[0].geometry.type === "point") {
+            var dist = attr.DISTANCE;
+            distLbl = (Math.round(dist * 100) / 100) + " " + units + " (" + this.parent.nls.approximate + ")";
+          }
+
+          var info = "";
+          var c = 0;
+          var row = [];
+          for (var prop in attr) {
+            if (prop !== "DISTANCE" && c < 3) {
+              if (typeof (this.displayFields) !== 'undefined') {
+                for (var ij = 0; ij < this.displayFields.length; ij++) {
+                  var field = this.displayFields[ij];
+                  if (field.expression === prop) {
+                    var fVal = analysisUtils.getFieldValue(prop, attr[prop], this.specialFields,
+                      this.dateFields, 'longMonthDayYear');
+                    var value;
+                    if (typeof (fVal) !== 'undefined' && fVal !== null) {
+                      value = utils.stripHTML(fVal.toString());
+                    } else {
+                      value = "";
+                    }
+                    var label;
+                    if (gra._layer && gra._layer.fields) {
+                      var cF = analysisUtils.getField(gra._layer.fields, prop);
+                      if (cF) {
+                        label = cF.alias;
+                      }
+                    }
+                    if (typeof (label) === 'undefined' || label in ['', ' ', null, undefined]) {
+                      label = prop;
+                    }
+                    if (analysisUtils.isURL(value)) {
+                      value = '<a href="' + value + '" target="_blank" style="color: inherit;">' + label + '</a>';
+                    } else if (analysisUtils.isEmail(value)) {
+                      value = '<a href="mailto:' + value + '" style="color: inherit;">' + label + '</a>';
+                    }
+                    info += (value + "<br/>");
+                    c += 1;
+                    row.push({
+                      value: value.indexOf(',') > -1 ? value.replace(',', '') : value,
+                      label: label
+                    });
+                  }
+                }
               }
             }
-            if (typeof (label) === 'undefined' || label in ['', ' ', null, undefined]) {
-              label = prop;
+          }
+          analysisResults.push(row);
+
+          if (!snapShot) {
+            var div = domConstruct.create("div", {}, tpc);
+            domClass.add(div, "SATcolRec");
+            domClass.add(div, this.parent.lightTheme ? 'lightThemeBorder' : 'darkThemeBorder');
+
+            var div1 = domConstruct.create("div", {}, div);
+            domClass.add(div1, "SATcolRecBar");
+
+            var div2 = domConstruct.create("div", {
+              innerHTML: num
+            }, div1);
+            domClass.add(div2, "SATcolRecNum");
+            domStyle.set(div2, "backgroundColor", this.parent.config.activeColor);
+            on(div2, "click", lang.hitch(this, this._zoomToLocation, loc));
+
+            if (distLbl) {
+              var div3 = domConstruct.create("div", {
+                innerHTML: distLbl
+              }, div1);
+              domClass.add(div3, "SATcolDistance");
             }
-            if (this.isURL(value)) {
-              value = '<a href="' + value + '" target="_blank" style="color: inherit;">' + label + '</a>';
-            } else if (this.isEmail(value)) {
-              value = '<a href="mailto:' + value + '" style="color: inherit;">' + label + '</a>';
+
+            if (this.parent.config.enableRouting) {
+              var div4 = domConstruct.create("div", { title: this.parent.nls.get_directions }, div1);
+              domClass.add(div4, "SATcolDir");
+              on(div4, "click", lang.hitch(this, this._routeToIncident, loc));
             }
-            info += (value + "<br/>");
-            c += 1;
+
+            var div5 = domConstruct.create("div", {
+              'class': 'SATcolWrap',
+              innerHTML: info
+            }, div);
+            domClass.add(div5, "SATcolInfo");
+
+            _w += domGeom.position(div).w;
+
+            var sls = new SimpleLineSymbol(SimpleLineSymbol.STYLE_SOLID,
+              new Color.fromRgb(this.parent.config.activeMapGraphicColor), 1);
+            var sms = new SimpleMarkerSymbol(SimpleMarkerSymbol.STYLE_CIRCLE, 24, sls,
+              new Color.fromRgb(this.parent.config.activeMapGraphicColor));
+            var fnt = new Font();
+            fnt.family = "Arial";
+            fnt.size = "12px";
+            var symText = new TextSymbol(num, fnt, new esriColor(this.parent.config.fontColor));
+            symText.setOffset(0, -4);
+            this.graphicsLayer.add(new Graphic(loc, sms, attr));
+            this.graphicsLayer.add(new Graphic(loc, symText, attr));
           }
         }
-
-        var div = domConstruct.create("div", {}, tpc);
-        domClass.add(div, "SATcolRec");
-
-        var div1 = domConstruct.create("div", {}, div);
-        domClass.add(div1, "SATcolRecBar");
-
-        var div2 = domConstruct.create("div", {
-          innerHTML: num
-        }, div1);
-        domClass.add(div2, "SATcolRecNum");
-        domStyle.set(div2, "backgroundColor", this.parent.config.color);
-        on(div2, "click", lang.hitch(this, this._zoomToLocation, loc));
-
-        if (distLbl) {
-          var div3 = domConstruct.create("div", {
-            innerHTML: distLbl
-          }, div1);
-          domClass.add(div3, "SATcolDistance");
-        }
-
-        if (this.parent.config.enableRouting) {
-          var div4 = domConstruct.create("div", { title: this.parent.nls.get_directions }, div1);
-          domClass.add(div4, "SATcolDir");
-          on(div4, "click", lang.hitch(this, this._routeToIncident, loc));
-        }
-
-        var div5 = domConstruct.create("div", {
-          'class': 'SATcolWrap',
-          innerHTML: info
-        }, div);
-        domClass.add(div5, "SATcolInfo");
-
-        var sls = new SimpleLineSymbol(
-          SimpleLineSymbol.STYLE_SOLID, new Color.fromString(this.parent.config.color), 1);
-        var sms = new SimpleMarkerSymbol(
-          SimpleMarkerSymbol.STYLE_CIRCLE, 24, sls, new Color.fromString(this.parent.config.color));
-        var fnt = new Font();
-        fnt.family = "Arial";
-        fnt.size = "12px";
-        var symText = new TextSymbol(num, fnt, "#ffffff");
-        symText.setOffset(0, -4);
-
-        if (attr.OUTSIDE_POLYGON === null) {
-          var distSym = new SimpleLineSymbol(
-            SimpleLineSymbol.STYLE_SOLID, new Color([0, 0, 0, 1]), 1);
-          var distLine = new Polyline(loc.spatialReference);
-          var distPt = this.incident.geometry;
-          if (this.incident.geometry.type !== "point") {
-            distPt = this.incident.geometry.getExtent().getCenter();
-          }
-          distLine.addPath([loc, distPt]);
-          this.graphicsLayer.add(new Graphic(distLine, distSym, {}));
-          //this._graphics.push(new Graphic(distLine, distSym, {}));
-        }
-        this.graphicsLayer.add(new Graphic(loc, sms, attr));
-        this.graphicsLayer.add(new Graphic(loc, symText, attr));
-        //this._graphics.push(new Graphic(loc, sms, attr));
-        //this._graphics.push(new Graphic(loc, symText, attr));
       }
 
-    },
-
-    _getField: function (fields, v) {
-      for (var i = 0; i < fields.length; i++) {
-        var f = fields[i];
-        if (f.name === v || f.alias === v) {
-          return f;
-        }
-      }
-      return undefined;
-    },
-
-    // getFields
-    _getFields: function (layer) {
-      var fields = [];
-      if (this.tab.advStat && this.tab.advStat.stats &&
-        this.tab.advStat.stats.outFields &&
-        this.tab.advStat.stats.outFields.length > 0) {
-        array.forEach(this.tab.advStat.stats.outFields, function (obj) {
-          fields.push(obj.expression);
-        });
+      if (!snapShot && hasResults) {
+        domStyle.set(tpc, 'width', _w);
       } else {
-        var fldInfos;
-        if (layer.infoTemplate) {
-          fldInfos = layer.infoTemplate.info.fieldInfos;
-        } else if (this.parent.map.itemInfo.itemData.operationalLayers.length > 0) {
-          var mapLayers = this.parent.map.itemInfo.itemData.operationalLayers;
-          fldInfos = null;
-          mapServiceLayerLoop:
-            for (var i = 0; i < mapLayers.length; i++) {
-              var lyr = mapLayers[i];
-              if (lyr.layerType === "ArcGISMapServiceLayer") {
-                if (typeof (lyr.layers) !== 'undefined') {
-                  for (var ii = 0; ii < lyr.layers.length; ii++) {
-                    var sl = lyr.layers[ii];
-                    if (sl.id === layer.layerId) {
-                      if (sl.popupInfo) {
-                        fldInfos = sl.popupInfo.fieldInfos;
-                        break mapServiceLayerLoop;
-                      }
-                    }
-                  }
-                }
-              }
-            }
-          if (!fldInfos) {
-            fldInfos = layer.fields;
-          }
-        } else {
-          fldInfos = layer.fields;
-        }
-        if (fldInfos) {
-          for (var j = 0; j < fldInfos.length; j++) {
-            var fld = fldInfos[j];
-            if (typeof (fld.visible) !== 'undefined') {
-              if (fld.visible) {
-                fields.push(fld.fieldName);
-              }
-            } else {
-              fields.push(fld.name);
-            }
-          }
-        }
-      }
-      // special fields: dates and domains
-      var spFields = {};
-      if (layer.fields) {
-        array.forEach(layer.fields, lang.hitch(this, function (fld) {
-          if (fld.type === "esriFieldTypeDate" || fld.domain) {
-            if (fld.type === "esriFieldTypeDate") {
-              if (layer.infoTemplate) {
-                for (var key in layer.infoTemplate._fieldsMap) {
-                  if (typeof (layer.infoTemplate._fieldsMap[key].fieldName) !== 'undefined') {
-                    if (layer.infoTemplate._fieldsMap[key].fieldName === fld.name) {
-                      if (typeof (layer.infoTemplate._fieldsMap[key].format.dateFormat) !== 'undefined') {
-                        this.dateFields[fld.name] = layer.infoTemplate._fieldsMap[key].format.dateFormat;
-                      }
-                    }
-                  }
-                }
-              }
-            }
-            spFields[fld.name] = fld;
-          }
-        }));
-      }
-      this.specialFields = spFields;
-      return fields;
-    },
-
-    // get field value
-    _getFieldValue: function (fldName, fldValue) {
-      var value = fldValue;
-      if (this.specialFields[fldName]) {
-        var fld = this.specialFields[fldName];
-        if (fld.type === "esriFieldTypeDate") {
-          var _f;
-          if (this.dateFields[fldName] !== 'undefined') {
-            var dFormat = this.dateFields[fldName];
-            if (typeof (dFormat) !== undefined) {
-              _f = { dateFormat: dFormat };
-            } else {
-              _f = { dateFormat: 'longMonthDayYear' };
-            }
-          } else {
-            _f = { dateFormat: 'longMonthDayYear' };
-          }
-          value = utils.fieldFormatter.getFormattedDate(new Date(fldValue), _f);
-        } else {
-          var codedValues = fld.domain.codedValues;
-          array.some(codedValues, function (obj) {
-            if (obj.code === fldValue) {
-              value = obj.name;
-              return true;
-            }
+        if (hasResults) {
+          def.resolve({
+            graphics: results,
+            analysisResults: analysisResults,
+            context: this
           });
+          return def;
         }
       }
-      return value;
     },
 
-    isURL: function (v) {
-      return /(https?:\/\/|ftp:)/g.test(v);
+    _exportToCSV: function (results, snapShot, downloadAll, analysisResults) {
+      var pi = {
+        type: 'closest',
+        baseLabel: this.baseLabel,
+        csvAllFields: this.parent.config.csvAllFields,
+        layer: this.tab.tabLayers[0],
+        opLayers: this.parent.opLayers,
+        nlsValue: this.parent.nls.closest,
+        nlsCount: this.parent.nls.count
+      };
+      var res = analysisUtils.exportToCSV(results, snapShot, downloadAll, analysisResults, pi);
+      this.summaryLayer = res.summaryLayer;
+      return res.details;
     },
 
-    isEmail: function (v) {
-      return /\S+@\S+\.\S+/.test(v);
+    _getFields: function (layer) {
+      var fieldDetails = analysisUtils.getFields(layer, this.tab, this.allFields, this.parent);
+      this.dateFields = fieldDetails.dateFields;
+      this.specialFields = fieldDetails.specialFields;
+      this.displayFields = analysisUtils.getDisplayFields(this.tab);
+      return fieldDetails.fields;
     },
 
-    // get distance
-    _getDistance: function (geom1, geom2) {
-      var dist = 0;
-      var units = this.parent.config.distanceUnits;
-      dist = geometryEngine.distance(geom1, geom2, 9001);
-      switch (units) {
-        case "miles":
-          dist *= 0.000621371;
-          break;
-        case "kilometers":
-          dist *= 0.001;
-          break;
-        case "feet":
-          dist *= 3.28084;
-          break;
-        case "yards":
-          dist *= 1.09361;
-          break;
-        case "nauticalMiles":
-          dist *= 0.000539957;
-          break;
-      }
-      return dist;
-    },
-
-    // COMPARE DISTANCE
-    _compareDistance: function (a, b) {
-      if (a.attributes.DISTANCE < b.attributes.DISTANCE) {
-        return -1;
-      }
-      if (a.attributes.DISTANCE > b.attributes.DISTANCE) {
-        return 1;
-      }
-      return 0;
-    },
-
-    // zoom to location
     _zoomToLocation: function (loc) {
       this.parent.zoomToLocation(loc);
     },
 
-    // route to incident
     _routeToIncident: function (loc) {
       this.parent.routeToIncident(loc);
     }

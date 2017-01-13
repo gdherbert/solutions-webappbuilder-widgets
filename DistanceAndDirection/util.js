@@ -64,7 +64,7 @@ define([
          **/
         getCoordValues: function (fromInput, toType, numDigits) {
 
-            var nd = numDigits || 2;
+            var nd = numDigits || 6;
 
             var tt;
             if (toType.name) {
@@ -81,14 +81,14 @@ define([
                 coordinates: [[fromInput.x, fromInput.y]],
                 conversionType: tt,
                 numOfDigits: nd,
-                rounding: false,
+                rounding: true,
                 addSpaces: false
             };
 
             if (toType === 'MGRS') {
                 params.conversionMode = 'mgrsDefault';
                 params.addSpaces = false;
-                params.numOfDigits = 5;
+                params.numOfDigits = 6;
             } else if (toType === 'UTM') {
                 params.conversionMode = 'utmNorthSouth';
                 params.addSpaces = true;
@@ -96,7 +96,7 @@ define([
                 params.conversionMode = 'garsDefault';
             } else if (toType === 'USNG') {
                 params.addSpaces = true;
-                params.numOfDigits = 5;
+                params.numOfDigits = 6;
             }
 
             return this.geomService.toGeoCoordinateString(params);

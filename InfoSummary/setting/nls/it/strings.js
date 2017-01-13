@@ -17,13 +17,13 @@ define({
   "symbolOptionsText": "Simbologia mappa",
   "iconOptionsText": "Simbologia pannello",
   "sympolPopupTitle": "impostazioni di Visualizzazione",
-  "rdoLayer": "Simbolo predefinito",
+  "rdoLayer": "Simbolo di default",
   "rdoCustom": "Usa immagine",
   "chkCluster": "Abilita clustering",
   "defineClusterSymbol": "Specifica simbolo cluster",
   "rdoEsri": "Seleziona un simbolo",
   "rdoLayerIcon": "Usa simbolo mappa",
-  "rdoCustomIcon": "Usa immagine",
+  "rdoCustomIcon": "Usa un'immagine",
   "editCustomSymbol": "Modifica simbolo personalizzato",
   "editCustomIcon": "Modifica icona personalizzata",
   "missingRefreshValue": "Specificare un valore dell'intervallo di aggiornamento.",
@@ -48,5 +48,7 @@ define({
   "hidePanelHelp": "Abilita/disabilita visualizzazione pannello.",
   "continuousRefreshHelp": "Nota: la raccolta feature si aggiorna continuamente.",
   "panelCountOptionHelp": "Abilita/disabilita visualizzazione numero di feature.",
-  "panelIconOptionHelp": "Abilita/disabilita visualizzazione di un logo sul pannello principale."
+  "panelIconOptionHelp": "Abilita/disabilita visualizzazione di un logo sul pannello principale.",
+  "rdoGroupByField": "per campo",
+  "rdoGroupByRenderer": "per renderer"
 });

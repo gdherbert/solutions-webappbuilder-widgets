@@ -1,7 +1,7 @@
 <div class="tabPanel" data-dojo-attach-point="lineContainer">
   <div class="controls">
 
-  <div class="controlGroup">
+<!--   <div class="controlGroup">
     <label>Type</label>
     <div class="controlItem">
       <select disabled="disabled" style="width: 225px" data-dojo-type="dijit/form/Select">
@@ -11,7 +11,7 @@
       </select>
     </div>
   </div>
-
+ -->
   <div class="controlGroup">
       <label>From</label>
       <div class="controlItem">
@@ -25,7 +25,7 @@
   <div class="controlGroup">
       <label data-dojo-attach-point="lineStartPointLabel">Start Point</label>
       <div class="controlItem">
-        <input class="jimu-input coordInput" data-dojo-attach-point="startPointCoordsLine" placeholder="Enter Coordinates" />
+        <input class="jimu-input coordInput" data-dojo-attach-point="startPointCoordsLine" />
         <span class="frmtBtn" data-dojo-attach-point="coordinateFormatButtonLine"></span>
         <div class="addPointBtn" data-dojo-attach-point="addPointBtnLine"></div>
     </div>
@@ -52,8 +52,8 @@
         <option value="feet">Feet</option>
         <option value="kilometers">Kilometers</option>
         <option value="miles">Miles</option>
-        <option selected="selected" value="meters">Meters</option>
-        <option value="nautical-miles">Nautical Mile</option>
+        <option value="meters" selected="selected">Meters</option>
+        <option value="nautical-miles">Nautical Miles</option>
         <option value="yards">Yards</option>
       </select>
     </div>
@@ -66,9 +66,9 @@
         required="true"
         value="1"
         data-dojo-props="
-          constraints: {min: 0, max: 6283},
-          invalidMessage: 'Please enter a numeric value.',
-          rangeMessage: 'Invalid Angle'"
+          constraints: {min: 0, max: 360},
+          invalidMessage: 'The value entered must be numeric.',
+          rangeMessage: 'Value must be between 0 and 360'"
         data-dojo-attach-point="angleInput">
       </input>
       <select style="width: 100px" class="controlSpace" data-dojo-type="dijit/form/Select" data-dojo-attach-point="angleUnitDD">

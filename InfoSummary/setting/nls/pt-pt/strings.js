@@ -21,9 +21,9 @@ define({
   "rdoCustom": "Utilizar uma Imagem",
   "chkCluster": "Permitir Clustering",
   "defineClusterSymbol": "Especificar Símbolo do Cluster",
-  "rdoEsri": "Escolher um Símbolo",
-  "rdoLayerIcon": "Utilizar Símbolo do Mapa",
-  "rdoCustomIcon": "Utilizar uma Imagem",
+  "rdoEsri": "Escolher um símbolo",
+  "rdoLayerIcon": "Utilizar símbolo de mapa",
+  "rdoCustomIcon": "Utilizar uma imagem",
   "editCustomSymbol": "Editar Símbolo Personalizado",
   "editCustomIcon": "Editar Ícone Personalizado",
   "missingRefreshValue": "Por favor forneça uma actualização de valor de intervalo.",
@@ -33,7 +33,7 @@ define({
   "refreshUnit": "minutos.",
   "symbolOptions": "Símbolo",
   "panelFeatureDisplay": "Painel",
-  "chkGroup": "Elementos de Grupo",
+  "chkGroup": "Elementos de grupo",
   "selectField": "Campo",
   "fieldLabel": "Rótulo",
   "addField": "Adicionar Campo",
@@ -48,5 +48,7 @@ define({
   "hidePanelHelp": "Ativar/Desativar exibição do painel principal.",
   "continuousRefreshHelp": "Nota: A atualização da coleção de elementos irá ocorrer de forma contínua.",
   "panelCountOptionHelp": "Ativar/Desativar exibição de contagens de elementos.",
-  "panelIconOptionHelp": "Ativar/Desativar exibição de um logótipo no painel principal."
+  "panelIconOptionHelp": "Ativar/Desativar exibição de um logótipo no painel principal.",
+  "rdoGroupByField": "por campo",
+  "rdoGroupByRenderer": "por renderizador"
 });

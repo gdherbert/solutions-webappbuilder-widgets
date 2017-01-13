@@ -17,12 +17,12 @@ define({
   "symbolOptionsText": "Harita Sembolojisi",
   "iconOptionsText": "Panel Sembolojisi",
   "sympolPopupTitle": "Görüntü Ayarları",
-  "rdoLayer": "Varsayılan Sembol",
+  "rdoLayer": "Varsayılan sembol",
   "rdoCustom": "Görüntü kullan",
   "chkCluster": "Kümelendirmeyi Etkinleştir",
   "defineClusterSymbol": "Küme Sembolü Belirtin",
-  "rdoEsri": "Sembol Seçin",
-  "rdoLayerIcon": "Harita Sembolü Kullan",
+  "rdoEsri": "Sembol seç",
+  "rdoLayerIcon": "Harita sembolü kullan",
   "rdoCustomIcon": "Görüntü kullan",
   "editCustomSymbol": "Özel Simgeyi Düzenle",
   "editCustomIcon": "Özel İkonu Düzenle",
@@ -33,7 +33,7 @@ define({
   "refreshUnit": "dakika.",
   "symbolOptions": "Sembol",
   "panelFeatureDisplay": "Panel",
-  "chkGroup": "Grup Detayları",
+  "chkGroup": "Detayları gruplandır",
   "selectField": "Alan",
   "fieldLabel": "Etiket",
   "addField": "Alan Ekle",
@@ -48,5 +48,7 @@ define({
   "hidePanelHelp": "Ana panel ekranını etkinleştirin/devre dışı bırakın.",
   "continuousRefreshHelp": "Not: Detay koleksiyonu yenilemesi sürekli olarak gerçekleştirilir.",
   "panelCountOptionHelp": "Detay sayısı görüntülemeyi etkinleştirin/devre dışı bırakın.",
-  "panelIconOptionHelp": "Ana panel üzerinde logo görüntülemeyi etkinleştirin/devre dışı bırakın."
+  "panelIconOptionHelp": "Ana panel üzerinde logo görüntülemeyi etkinleştirin/devre dışı bırakın.",
+  "rdoGroupByField": "alana göre",
+  "rdoGroupByRenderer": "işlemciye göre"
 });

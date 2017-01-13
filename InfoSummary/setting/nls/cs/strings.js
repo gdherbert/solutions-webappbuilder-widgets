@@ -21,7 +21,7 @@ define({
   "rdoCustom": "Použít obrázek",
   "chkCluster": "Povolit shlukování",
   "defineClusterSymbol": "Nastavit symbol shlukování",
-  "rdoEsri": "Vyberte symbol",
+  "rdoEsri": "Vybrat symbol",
   "rdoLayerIcon": "Použít symbol mapy",
   "rdoCustomIcon": "Použít obrázek",
   "editCustomSymbol": "Upravit vlastní symbol",
@@ -48,5 +48,7 @@ define({
   "hidePanelHelp": "Povolí nebo zakáže zobrazení hlavního panelu.",
   "continuousRefreshHelp": "Poznámka: Kolekce prvků se budou obnovovat průběžně.",
   "panelCountOptionHelp": "Povolí nebo zakáže počty prvků.",
-  "panelIconOptionHelp": "Povolí nebo zakáže logo na hlavním panelu."
+  "panelIconOptionHelp": "Povolí nebo zakáže logo na hlavním panelu.",
+  "rdoGroupByField": "podle pole",
+  "rdoGroupByRenderer": "podle vykreslovače"
 });

@@ -48,5 +48,7 @@ define({
   "hidePanelHelp": "メイン パネルの表示を有効化/無効化します。",
   "continuousRefreshHelp": "注意: フィーチャ コレクションは常時更新されます。",
   "panelCountOptionHelp": "フィーチャ数の表示を有効化/無効化します。",
-  "panelIconOptionHelp": "メイン パネル上のロゴの表示を有効化/無効化します。"
+  "panelIconOptionHelp": "メイン パネル上のロゴの表示を有効化/無効化します。",
+  "rdoGroupByField": "フィールド",
+  "rdoGroupByRenderer": "レンダリング"
 });

@@ -48,5 +48,7 @@ define({
   "hidePanelHelp": "تمكين/تعطيل عرض اللوحة الرئيسية.",
   "continuousRefreshHelp": "ملحوظة: سوف يحدث باستمرار عملية تحديث مجموعة المعالم.",
   "panelCountOptionHelp": "تمكين/تعطيل عرض تعدادات المعلم",
-  "panelIconOptionHelp": "تمكين/تعطيل عرض الشعارات في اللوحة الرئيسية."
+  "panelIconOptionHelp": "تمكين/تعطيل عرض الشعارات في اللوحة الرئيسية.",
+  "rdoGroupByField": "بواسطة الحقل",
+  "rdoGroupByRenderer": "بواسطة جهاز العرض"
 });

@@ -87,7 +87,7 @@ define([
         input: true,
         inputFromText: false,
         hasCustomLabel: false,
-        /**** type: 'dd', Available Types: DD, DDM, DMS, GARS, MGRS, USNG, UTM ****/
+        /**** type: 'dd', Available Types: DD, DDM, DMS, GARS, MGRS, USNG, UTM (Z),UTM (H) ****/
 
         /**
          *
@@ -187,6 +187,11 @@ define([
             'INPUTPOINTDIDCHANGE',
             dojoLang.hitch(this, this.mapWasClicked)
           );
+          
+          dojoTopic.subscribe(
+            'INPUTERROR',
+            dojoLang.hitch(this, this.inputError)
+          );
 
           // listen for dijit events
           this.own(dojoOn(
@@ -209,7 +214,7 @@ define([
 
           this.own(
             this.coordName.on(
-              'change',
+              'blur',
               dojoLang.hitch(this, this.coordNameDidChange))
           );
 
@@ -310,7 +315,7 @@ define([
                 s = false;
             }
 
-            var t = s ? 'Copy Succesful' : 'Unable to Copy\n use ctrl+c as an alternative';
+            var t = s ? 'Copy Succesful' : 'Unable to Copy\n use ctrl+c as an alternative.';
 
             this.showToolTip(evt.currentTarget.id, t);
         },
@@ -360,7 +365,7 @@ define([
                 }
             }
 
-            t = s ? 'Copy Succesful' : 'Unable to Copy\n use ctrl+c as an alternative';
+            t = s ? 'Copy Succesful' : 'Unable to Copy\n use ctrl+c as an alternative.';
 
             this.showToolTip(this.cpbtn.id, t);
         },
@@ -392,7 +397,8 @@ define([
          **/
         geomSrvcDidComplete: function (r) {
             if (r[0].length <= 0) {
-                new JimuMessage({message: 'unable to parse coordinates'});
+                new JimuMessage({message: 'Unable to parse coordinates please check your input.'});
+                dojoTopic.publish('INPUTERROR');
                 return;
             }
 
@@ -412,7 +418,8 @@ define([
          *
          **/
         geomSrvcDidFail: function () {
-          new JimuMessage({message: 'Unable to parse input coordinates'});
+          new JimuMessage({message: 'Unable to parse coordinates please check your input.'});
+          dojoTopic.publish('INPUTERROR');
         },
 
         /**
@@ -432,7 +439,8 @@ define([
                     //this.type = newType[newType.length-1].name;
                     this.processCoordTextInput(sanitizedInput, newType[newType.length-1].name);
                 } else {
-                    new JimuMessage({message: 'Unable to determine input coordinate type'});
+                    new JimuMessage({message: 'Unable to determine input coordinate type please check your input.'});
+                    dojoTopic.publish('INPUTERROR');
                 }
                 dojoDomAttr.set(this.coordtext, 'value', sanitizedInput);
             }
@@ -586,8 +594,16 @@ define([
                     this.sub4label.innerHTML = 'Northing';
                     this.setVisible(this.sub4);
                     break;
-                case 'UTM':
+                case 'UTM (Z)':
                     this.sub1label.innerHTML = 'Zone';
+                    this.sub2label.innerHTML = 'Easting';
+                    this.sub3label.innerHTML = 'Northing';
+                    this.setVisible(this.sub3);
+                    this.setHidden(this.sub4);
+                    cntrHeight = '125px';
+                    break;
+                case 'UTM (H)':
+                    this.sub1label.innerHTML = 'Hemisphere';
                     this.sub2label.innerHTML = 'Easting';
                     this.sub3label.innerHTML = 'Northing';
                     this.setVisible(this.sub3);
@@ -606,6 +622,8 @@ define([
          **/
         setCoordUI: function (withValue) {
             var formattedStr;
+            if(withValue){
+            
             var cntrlid = this.uid.split('_')[1];
 
             // make sure we haven't been removed
@@ -709,8 +727,8 @@ define([
 
                     formattedStr = r.formatResult;
                     break;
-                case 'UTM':
-                    r = this.util.getFormattedUTMStr(withValue, format, as);
+                case 'UTM (Z)':
+                    r = this.util.getFormattedUTMZStr(withValue, format, as);
 
                     this['cc_' + cntrlid + 'sub1val'].value = r.zone + r.hemisphere;
                     this['cc_' + cntrlid + 'sub2val'].value = r.easting;
@@ -718,21 +736,34 @@ define([
 
                     formattedStr = r.formatResult;
                     break;
-                }
-                this.setSubCoordUI(dojoDomClass.contains(this.coordcontrols, 'expanded'));
+                case 'UTM (H)':
+                    r = this.util.getFormattedUTMHStr(withValue, format, as);
+
+                    this['cc_' + cntrlid + 'sub1val'].value = r.zone + r.hemisphere;
+                    this['cc_' + cntrlid + 'sub2val'].value = r.easting;
+                    this['cc_' + cntrlid + 'sub3val'].value = r.westing;
+
+                    formattedStr = r.formatResult;
+                    break;
+                }                
+            }
+            } else {
+              formattedStr = '';
+              
+            }
+            this.setSubCoordUI(dojoDomClass.contains(this.coordcontrols, 'expanded'));
                 if (this.coordtext) {
                     dojoDomAttr.set(this.coordtext, 'value', formattedStr);
                 }
-            }
         },
 
         /**
          *
          **/
         getFormattedCoordinates: function () {
-            this.util.getCoordValues(this.currentClickPoint, this.type).then(
-                dojoLang.hitch({s: this}, function (r) {
-                    this.s.setCoordUI(r);
+            this.util.getCoordValues(this.currentClickPoint, this.type, 4).then(
+                dojoLang.hitch(this, function (r) {
+                    this.setCoordUI(r);
                 }),
                 dojoLang.hitch(this, function (err) {
                     console.log(err);
@@ -750,6 +781,13 @@ define([
                 this.parentWidget.coordGLayer.clear();
                 this.parentWidget.coordGLayer.add(new EsriGraphic(this.currentClickPoint));
             }
+        },
+        
+        /**
+         *
+         **/
+        inputError: function () {
+            this.setCoordUI();
         }
     });
 });

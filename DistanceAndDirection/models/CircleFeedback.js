@@ -52,11 +52,8 @@ define([
      */
     constructor: function () {
       this.inherited(arguments);
-
       this._utils = new Utils();
-
       this.syncEvents();
-
     },
 
     /*
@@ -78,6 +75,21 @@ define([
         dojoTopic.subscribe('MANUAL_CIRCLE_RADIUS_INPUT_COMPLETE',
            dojoLang.hitch(this, this.manualRadiusUpdateComplete)
         );
+        
+        dojoTopic.subscribe(
+            'manual-circle-center-point-input',
+            dojoLang.hitch(this, this.onCenterPointManualInputHandler)
+        );
+    },
+    
+    /*
+    Handler for the manual input of a center point
+    */
+    onCenterPointManualInputHandler: function (centerPoint) {
+        this._points = [];
+        this._points.push(centerPoint.offset(0, 0));
+        this.set('startPoint', this._points[0]);
+        this.map.centerAt(centerPoint);
     },
 
     /*
@@ -173,20 +185,26 @@ define([
       this.cleanup();
       this.circleGraphic = new EsriGraphic(circleGeometry, this.fillSymbol);
       this.map.graphics.add(this.circleGraphic);
-
     },
 
     /**
      *
      **/
     _onDoubleClickHandler: function (evt) {
-      dojoConnect.disconnect(this._onMouseMoveHandlerConnect);
+      this.disconnectOnMouseMoveHandler();
       this.cleanup();
       this._clear();
       this._setTooltipMessage(0);
       this._drawEnd(this.circleGraphic.geometry);
     },
-
+    
+    /**
+     *
+     **/
+    disconnectOnMouseMoveHandler: function () {
+      dojoConnect.disconnect(this._onMouseMoveHandlerConnect);
+    },
+    
     /*
      *
      */
@@ -200,21 +218,23 @@ define([
      *
      */
     setCircleGeometry: function (stPt, endPt) {
-
       var geom = new EsriPolyline(this.map.spatialReference);
       geom.addPath([stPt, endPt]);
 
       var length = EsriGeometryEngine.geodesicLength(geom, 9001);
       var unitLength = this._utils.convertMetersToUnits(length, this.lengthUnit);
-      this.set('length', unitLength);
+      
 
       if (this.isDiameter) {
-        unitLength = unitLength / 2;
+        unitLength = unitLength * 2;
       }
+      
+      this.set('length', unitLength);
 
       var circleGeometry = new EsriCircle(stPt, {
-        radius: unitLength,
-        geodesic: true
+        radius: length,
+        geodesic: true,
+        numberOfPoints: 360
       });
 
       return circleGeometry;

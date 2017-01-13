@@ -48,5 +48,7 @@ define({
   "hidePanelHelp": "Galvenā paneļa rādīšanas iespējošana/atspējošana.",
   "continuousRefreshHelp": "Piezīme. Elementu kolekcija tiks pastāvīgi atjaunota.",
   "panelCountOptionHelp": "Elementu skaita rādīšanas iespējošana/atspējošana.",
-  "panelIconOptionHelp": "Logotipa rādīšanas galvenajā panelī iespējošana/atspējošana."
+  "panelIconOptionHelp": "Logotipa rādīšanas galvenajā panelī iespējošana/atspējošana.",
+  "rdoGroupByField": "pēc lauka",
+  "rdoGroupByRenderer": "pēc renderētāja"
 });

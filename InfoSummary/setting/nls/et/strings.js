@@ -33,7 +33,7 @@ define({
   "refreshUnit": "minuti järel.",
   "symbolOptions": "Sümbol",
   "panelFeatureDisplay": "Paneel",
-  "chkGroup": "Grupi objektid",
+  "chkGroup": "Rühmita objektid",
   "selectField": "Väli",
   "fieldLabel": "Märgis",
   "addField": "Lisa väli",
@@ -48,5 +48,7 @@ define({
   "hidePanelHelp": "Saate põhipaneeli kuvamise lubada/keelata.",
   "continuousRefreshHelp": "Märkus. Objektide kogumit värskendatakse pidevalt.",
   "panelCountOptionHelp": "Saate objektide koguarvu kuvamise lubada/keelata.",
-  "panelIconOptionHelp": "Saate logo kuvamise põhipaneelil lubada/keelata."
+  "panelIconOptionHelp": "Saate logo kuvamise põhipaneelil lubada/keelata.",
+  "rdoGroupByField": "välja järgi",
+  "rdoGroupByRenderer": "renderdaja järgi"
 });

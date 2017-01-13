@@ -20,7 +20,6 @@
       "url": "http://api.worldweatheronline.com/free/v1/weather.ashx?format=json&num_of_days=3&extra=localObsTime&key=63hkyhwzpks3a3kj9k9jdfeg"
     }
   },
-  "bufferLabel": "Buffer Distance",
   "bufferRange": {
     "minimum": 0,
     "maximum": 100

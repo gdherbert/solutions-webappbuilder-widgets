@@ -36,12 +36,9 @@
         <span class="label" data-dojo-attach-point="panelIconOptionsLabel"> ${nls.panelIconOption}</span>
       </div>
       <div class="padTop20">
-        <div class="mainPanelPreviewContainer mainPanelPreviewContainerOff" data-dojo-attach-point="mainPanelPreviewContainer">
+        <div class="mainPanelPreviewContainerOff" data-dojo-attach-point="mainPanelPreviewContainer">
           <div class="leftContainer">
             <div data-dojo-attach-point="mainPanelPreviewButton" class="mainPanelPreviewButton">
-              <div data-dojo-attach-event="onclick:uploadImage" class="jimu-btn">
-                ${nls.uploadImage}
-              </div>
             </div>
             <div class="instruction2">
               ${nls.mainPanelText}
@@ -63,10 +60,6 @@
                    class="mainPanelText">
           </div>
         </div>
-        <input type="file"
-               accept="image/png, image/jpeg, image/bmp, image/gif"
-               data-dojo-attach-point="fileInput"
-               class="fileInput">
       </div>
       <div class="hidePanelContainer">
         <div title="${nls.hidePanelHelp}">

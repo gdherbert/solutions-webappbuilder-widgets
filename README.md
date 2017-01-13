@@ -16,20 +16,22 @@ The ArcGIS Solutions Builder Widgets is a set of widgets for use with the Web Ap
 The Widget Repository currently includes:
 
 
-|                              Widget Name                             | Latest WAB<br>Version Supported |                     Widget Version                     |
-|:--------------------------------------------------------------------:|:----------------------------:|:------------------------------------------------------:|
-| [Bomb Threat Tool](./BombThreat/README.md)                           |              2.0             |                          1.0.0                         |
-| [Coordinate Conversion](./CoordinateConversion/ReadMe.md)            |              2.0             |                          1.0.0                         |
-| [Critical Infrastructure and Key Resources](./CI_KR_Chart/README.md) |              1.2             |                          1.0.0                         |
-| [Distance and Direction](./DistanceAndDirection/ReadMe.md)           |              2.0             |                          1.0.0                         |
-| [Elevation Profile Widget](./ElevationProfileTable/README.md)        |              1.2             |                          1.0.0                         |
-| [ERG](./ERG/README.md)                                               |              2.0             |                          1.0.0                         |
-| [Filter Editor](./FilterEditor/README.md)                            |              2.0             | 1.0.0<br>[Moving to Mature Support ](#mature-support) |
-| [Grid Overlay](./GridOverlay/README.md)                              |              2.0             |                          1.0.0                         |
-| [Image Discovery](./ImageDiscovery/README.md)                        |              2.0             |                          1.0.0                         |
-| [Network Trace](./NetworkTrace/README.md)                            |              1.2             |                          1.0.0                         |
-| [Service Feasibility](./ServiceFeasibility/README.md)                |              1.2             |                          1.0.0                         |
-| [Visibility](./Visibility/README.md)                                 |              2.0             |                          1.0.0                         |
+| Widget Name | Latest WAB<br>Version Supported | Widget Version |
+|----------------------------------------------------------------------|:-------------------------------:|:-----------------------------------------------------:|
+| [Bomb Threat Tool](./BombThreat/README.md) | 2.0 | 1.0.0 |
+| [Coordinate Conversion](./CoordinateConversion/ReadMe.md) | 2.0 | 1.0.0 |
+| [Critical Infrastructure <br>and Key Resources](./CI_KR_Chart/README.md) | 1.2 | 1.0.0 |
+| [Distance and Direction](./DistanceAndDirection/ReadMe.md) | 2.0 | 1.0.0 |
+| [Elevation Profile Widget](./ElevationProfileTable/README.md) | 1.2 | 1.0.0 |
+| [ERG](./ERG/README.md) | 2.0 | 1.0.0 |
+| [Filter Editor](./FilterEditor/README.md) | 2.0 | 1.0.0* |
+| [Grid Overlay](./GridOverlay/README.md) | 2.0 | 1.0.0 |
+| [GRG](./GRG/README.md) | 2.0 | 1.0.0 |
+| [Image Discovery](./ImageDiscovery/README.md) | 2.0 | 1.0.0 |
+| [Network Trace](./NetworkTrace/README.md) | 1.2 | 1.0.0 |
+| [Service Feasibility](./ServiceFeasibility/README.md) | 1.2 | 1.0.0 |
+| [Visibility](./Visibility/README.md) | 2.0 | 1.0.0 |
+*[Moving to Mature Support](#mature-support)
 
 ## Requirements
 Requires Web AppBuilder for ArcGIS version 1.2 (minimum).

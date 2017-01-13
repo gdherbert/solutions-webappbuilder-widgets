@@ -37,12 +37,14 @@ define(['dojo/_base/declare',
     'jimu/dijit/SimpleTable',
     'jimu/dijit/Message',
     'jimu/dijit/ColorPicker',
+    'jimu/dijit/ImageChooser',
     'dojo/_base/array',
     'esri/symbols/SimpleMarkerSymbol',
     'esri/symbols/SimpleLineSymbol',
     'esri/symbols/PictureMarkerSymbol',
     'dojo/text!./MySymbolPicker.html',
-    'dojo/Evented'
+    'dojo/Evented',
+    'dojox/form/FileUploader'
 ],
   function (declare,
     _WidgetsInTemplateMixin,
@@ -68,6 +70,7 @@ define(['dojo/_base/declare',
     Table,
     Message,
     ColorPicker,
+    ImageChooser,
     array,
     SimpleMarkerSymbol,
     SimpleLineSymbol,
@@ -116,6 +119,7 @@ define(['dojo/_base/declare',
 
       postCreate: function () {
         this.inherited(arguments);
+        this._initImageChoosers();
         this._setFields(this.fields);
         this._initTabControl();
         this._initSymbolPickerTab(this.geometryType);
@@ -144,6 +148,28 @@ define(['dojo/_base/declare',
         this.chkGroup.set('disabled', this.hidePanel);
         this.rdoLayerIcon.set('disabled', this.hidePanel);
         this.rdoCustomIcon.set('disabled', this.hidePanel);
+      },
+
+      _initImageChoosers: function () {
+        this.imageIconChooser = new ImageChooser({
+          format: [ImageChooser.GIF, ImageChooser.JPEG, ImageChooser.PNG],
+          cropImage: false,
+          showTip: false,
+          goldenWidth: 10,
+          goldenHeight: 15
+        });
+        html.addClass(this.imageIconChooser.domNode, 'uploadCustom');
+        html.place(this.imageIconChooser.domNode, this.uploadCustomIcon, 'replace');
+
+        this.imageSymbolChooser = new ImageChooser({
+          format: [ImageChooser.GIF, ImageChooser.JPEG, ImageChooser.PNG],
+          cropImage: false,
+          showTip: false,
+          goldenWidth: 10,
+          goldenHeight: 15
+        });
+        html.addClass(this.imageSymbolChooser.domNode, 'uploadCustom');
+        html.place(this.imageSymbolChooser.domNode, this.uploadCustomSymbol, 'replace');
       },
 
       _setFields: function(fields){
@@ -181,7 +207,8 @@ define(['dojo/_base/declare',
         }
         this._initClusterSymbolPicker(geoType);
         this._addEventHandlers(geoType);
-        this._initUI();
+        //this._initUI();//change
+        this._initSymbolUI();
       },
 
       _initFeatureOptionsTab: function () {
@@ -223,13 +250,13 @@ define(['dojo/_base/declare',
           title: this.nls.selectField,
           "class": "label",
           type: "empty",
-          width: "160px"
+          width: "180px"//change from 160
         }, {
           name: "label",
           "class": "label",
           title: this.nls.fieldLabel,
           type: "empty",
-          width: "160px"
+          width: "140px"//change from 160
         }];
 
         this.groupOptionsTable = new Table({
@@ -241,21 +268,60 @@ define(['dojo/_base/declare',
         this.groupOptionsTable.placeAt(this.groupFieldOptions);
         this.groupOptionsTable.startup();
 
-        if (this.symbolInfo && this.symbolInfo.featureDisplayOptions &&
-          this.symbolInfo.featureDisplayOptions.fields) {
-          var featureOPtions = this.symbolInfo.featureDisplayOptions;
-          this.groupFeaturesEnabled = featureOPtions.groupEnabled;
-          this.chkGroup.set("checked", this.groupFeaturesEnabled);
-          for (var i = 0; i < featureOPtions.fields.length; i++) {
-            var field = featureOPtions.fields[i];
-            this._populateLayerRow(this.fieldOptionsTable, field, 'loSelect');
+        this._initFeatureOptionsUI();
+        this.isInitalLoad = false;
+      },
+
+      _initFeatureOptionsUI: function () {
+        var fdo;
+        if (this.symbolInfo && this.symbolInfo.featureDisplayOptions) {
+          fdo = this.symbolInfo.featureDisplayOptions;
+        }
+
+        if (fdo && fdo.fields) {
+          for (var i = 0; i < fdo.fields.length; i++) {
+            this._populateLayerRow(this.fieldOptionsTable, fdo.fields[i], 'loSelect');
           }
-          var groupField = featureOPtions.groupField;
-          this._populateLayerRow(this.groupOptionsTable, groupField, 'goSelect');
         } else {
           this._addFieldRow(this.groupOptionsTable, 'goSelect');
         }
-        this.isInitalLoad = false;
+
+        if (fdo && typeof (fdo.groupEnabled) !== 'undefined') {
+          this.groupFeaturesEnabled = fdo.groupEnabled;
+        } else {
+          this.groupFeaturesEnabled = false;
+        }
+        this._chkGroupChanged(this.groupFeaturesEnabled);
+        this.chkGroup.set('checked', this.groupFeaturesEnabled);
+
+        if (fdo && fdo.groupField) {
+          this._populateLayerRow(this.groupOptionsTable, fdo.groupField, 'goSelect');
+        }
+
+        var t = true;
+        if (fdo && typeof (fdo.groupByField) !== 'undefined') {
+          this._rdoGroupByFieldChanged(fdo.groupByField);
+          t = false;
+        }
+
+        var renGrouping = false;
+        if(this.renderer){
+          if (this.renderer.attributeField || this.renderer.field || this.renderer.field1) {
+            if (typeof(this.renderer.visualVariables) === 'undefined') {
+              renGrouping = true;
+            }
+          }
+        }
+        if (!renGrouping) {
+          domStyle.set(this.grpRenderer, 'display', 'none');
+        }
+        if (fdo && typeof (fdo.groupByRenderer) !== 'undefined') {
+          this._rdoGroupByRendererChanged(fdo.groupByRenderer);
+          t = false;
+        }
+        if (t) {
+          this._rdoGroupByFieldChanged(t);
+        }
       },
 
       _rowDeleted: function(table){
@@ -342,7 +408,7 @@ define(['dojo/_base/declare',
         tr.labelText = labelTextBox;
       },
 
-      _initUI: function () {
+      _initSymbolUI: function () {
         if (typeof (this.symbolInfo) !== 'undefined') {
           //set retained symbol properties
           this.symbolType = this.symbolInfo.symbolType;
@@ -352,77 +418,17 @@ define(['dojo/_base/declare',
           this.clusteringEnabled = this.symbolInfo.clusteringEnabled;
           this.userDefinedSymbol = this.symbolInfo.userDefinedSymbol;
           this._highLightColor = this.symbolInfo._highLightColor;
-          switch (this.symbolInfo.symbolType) {
-            case 'LayerSymbol':
-              if (this.symbolInfo.symbolOverride) {
-                this.userDefinedSymbol = true;
-                this.rdoEsriSym.set('checked', true);
-                this._rdoLayerSymChanged(false);
-                this._rdoCustomSymChanged(false);
-                this.symbolPicker.showBySymbol(jsonUtils.fromJson(this.symbolInfo.symbol));
-              } else {
-                this.rdoLayerSym.set('checked', true);
-                this._rdoEsriSymChanged(false);
-                this._rdoCustomSymChanged(false);
-              }
-              break;
-            case 'EsriSymbol':
-              this.userDefinedSymbol = true;
-              this.rdoEsriSym.set('checked', true);
-              this._rdoLayerSymChanged(false);
-              this._rdoCustomSymChanged(false);
-              this.symbolPicker.showBySymbol(jsonUtils.fromJson(this.symbolInfo.symbol));
-              break;
-            case 'CustomSymbol':
-              this.userDefinedSymbol = true;
-              this.rdoCustomSym.set('checked', true);
-              this._rdoEsriSymChanged(false);
-              this._rdoLayerSymChanged(false);
-              this._createImageDataDiv(this.symbolInfo.symbol, true, this.customSymbolPlaceholder);
-              break;
-          }
 
-          //set retained cluster options
-          switch (this.symbolInfo.clusterType) {
-            case 'ThemeCluster':
-              this.userDefinedSymbol = true;
-              //this.rdoThemeCluster.set('checked', true);
-              this.clusterType = 'ThemeCluster';
-              break;
-            case 'CustomCluster':
-              this.userDefinedSymbol = true;
-              //this.rdoCustomCluster.set('checked', true);
-              this.clusterType = 'CustomCluster';
-              this.chkClusterCnt.set('checked', this.displayFeatureCount);
-              this.colorPicker.setColor(new Color(this._highLightColor));
-              break;
-          }
-
-          switch (this.symbolInfo.iconType) {
-            case 'LayerIcon':
-              this.rdoLayerIcon.set('checked', true);
-              break;
-            case 'CustomIcon':
-              this.userDefinedSymbol = true;
-              this.rdoCustomIcon.set('checked', true);
-
-              if (this.symbolInfo.icon) {
-                this.updateImg();
-                var icon = jsonUtils.fromJson(this.symbolInfo.icon);
-                this._createImageDataDiv(icon, true, this.customIconPlaceholder);
-              }
-              break;
-          }
+          this._setSymbolType(this.symbolInfo.symbolType);
+          this._setClusterType(this.symbolInfo.clusterType);
+          this._setIconType(this.symbolInfo.iconType);
 
           //set cluster options properties
           if (typeof (this.symbolInfo.clusterType) !== 'undefined') {
             if (this.symbolInfo.clusterType === "CustomCluster") {
-              //this.rdoCustomCluster.set('checked', true);
               if (this.symbolInfo.clusterSymbol) {
                 this.clusterPicker.showBySymbol(jsonUtils.fromJson(this.symbolInfo.clusterSymbol));
               }
-            } else {
-              //this.rdoThemeCluster.set('checked', true);
             }
             this.userDefinedSymbol = true;
           }
@@ -435,7 +441,6 @@ define(['dojo/_base/declare',
           this._rdoCustomSymChanged(false);
           this.chkClusterSym.set('checked', false);
           this.chkClusterCnt.set('checked', false);
-          //this.rdoCustomCluster.set('checked', true);
           this.rdoLayerIcon.set('checked', true);
           this._rdoCustomIconChanged(false);
           this.symbolType = "LayerSymbol";
@@ -452,6 +457,71 @@ define(['dojo/_base/declare',
         }
       },
 
+      _setSymbolType: function (v) {
+        switch (v) {
+          case 'LayerSymbol':
+            if (this.symbolInfo.symbolOverride) {
+              this.userDefinedSymbol = true;
+              this.rdoEsriSym.set('checked', true);
+              this._rdoLayerSymChanged(false);
+              this._rdoCustomSymChanged(false);
+              this.symbolPicker.showBySymbol(jsonUtils.fromJson(this.symbolInfo.symbol));
+            } else {
+              this.rdoLayerSym.set('checked', true);
+              this._rdoEsriSymChanged(false);
+              this._rdoCustomSymChanged(false);
+            }
+            break;
+          case 'EsriSymbol':
+            this.userDefinedSymbol = true;
+            this.rdoEsriSym.set('checked', true);
+            this._rdoLayerSymChanged(false);
+            this._rdoCustomSymChanged(false);
+            this.symbolPicker.showBySymbol(jsonUtils.fromJson(this.symbolInfo.symbol));
+            break;
+          case 'CustomSymbol':
+            this.userDefinedSymbol = true;
+            this.rdoCustomSym.set('checked', true);
+            this._rdoEsriSymChanged(false);
+            this._rdoLayerSymChanged(false);
+            this._createImageDataDiv(this.symbolInfo.symbol, true, this.customSymbolPlaceholder);
+            break;
+        }
+      },
+
+      _setIconType: function (v) {
+        switch (v) {
+          case 'LayerIcon':
+            this.rdoLayerIcon.set('checked', true);
+            break;
+          case 'CustomIcon':
+            this.userDefinedSymbol = true;
+            this.rdoCustomIcon.set('checked', true);
+
+            if (this.symbolInfo.icon) {
+              this.updateImg();
+              var icon = jsonUtils.fromJson(this.symbolInfo.icon);
+              this._createImageDataDiv(icon, true, this.customIconPlaceholder);
+            }
+            break;
+        }
+      },
+
+      _setClusterType: function (v) {
+        switch (v) {
+          case 'ThemeCluster':
+            this.userDefinedSymbol = true;
+            this.clusterType = 'ThemeCluster';
+            break;
+          case 'CustomCluster':
+            this.userDefinedSymbol = true;
+            this.clusterType = 'CustomCluster';
+            this.chkClusterCnt.set('checked', this.displayFeatureCount);
+            this.colorPicker.setColor(new Color(this._highLightColor));
+            break;
+        }
+      },
+
       updateImg: function () {
         if (this.symbolInfo.icon.toString().indexOf('<img') > -1) {
           var img = document.createElement('div');
@@ -464,13 +534,13 @@ define(['dojo/_base/declare',
 
       _addEventHandlers: function (geoType) {
         if (geoType === 'point') {
-          this.own(on(this.uploadCustomSymbol, 'click', lang.hitch(this, function () {
-            this._editIcon("Symbol");
+          this.own(on(this.imageSymbolChooser, 'ImageChange', lang.hitch(this, function (d) {
+            this.uploadImage("Symbol", d);
           })));
         }
 
-        this.own(on(this.uploadCustomIcon, 'click', lang.hitch(this, function () {
-          this._editIcon("Icon");
+        this.own(on(this.imageIconChooser, 'ImageChange', lang.hitch(this, function (d) {
+          this.uploadImage("Icon", d);
         })));
 
         this.btnOk.innerText = this.nls.common.ok;
@@ -558,6 +628,52 @@ define(['dojo/_base/declare',
           this._createImageDataDiv2(icon, 28, 28, false, isCustom);
         }
 
+        var vals;
+        if (typeof (this.ren) !== 'undefined') {
+          vals = [];
+          for (var i = 0; i < this.ren.length; i++) {
+            var r = this.ren[i];
+            //var l, r, d;
+            var l, v, d;
+            if (typeof (r.value) !== 'undefined') {
+              var rVal = isNaN(r.value) ? "'" + r.value + "'" : r.value;
+              l = typeof (r.label) !== 'undefined' ? r.label : r.value;
+              v = typeof (rVal) !== 'undefined' ? " === " + rVal : undefined;
+              d = typeof (r.description) !== 'undefined' && r.description !== "" ? r.description : undefined;
+            } else if (typeof (r.classMaxValue) !== 'undefined') {
+              l = r.label;
+              var rendererVals;
+              if (l) {
+                rendererVals = l.split(" - ");
+              }
+              if (rendererVals) {
+                if (rendererVals.length > 1) {
+                  v = " >= " + rendererVals[0] + " && <= " + rendererVals[1];
+                } else {
+                  v = " === " + rendererVals[0];
+                }
+              }
+              d = typeof (r.description) !== 'undefined' && r.description !== "" ? r.description : undefined;
+            }
+            vals.push({ value: v, label: l, description: d });
+          }
+        }
+
+        var groupByRendererFields = [];
+        if (this.renderer && this.renderer.attributeField) {
+          groupByRendererFields.push({ name: this.renderer.attributeField });
+          if (this.renderer.attributeField2) {
+            groupByRendererFields.push({ name: this.renderer.attributeField2 });
+          }
+          if (this.renderer.attributeField3) {
+            groupByRendererFields.push({ name: this.renderer.attributeField3 });
+          }
+        } else if (this.renderer && this.renderer.field) {
+          groupByRendererFields.push({ name: this.renderer.field });
+        } else if (this.renderer && this.renderer.field1) {
+          groupByRendererFields.push({ name: this.renderer.field1 });
+        }
+
         this.symbolInfo = {
           symbolType: this.symbolType,
           symbol: symbol,
@@ -577,8 +693,14 @@ define(['dojo/_base/declare',
           selectedId: this.selectedID,
           featureDisplayOptions: {
             groupEnabled: this.groupFeaturesEnabled,
+            groupByRenderer: typeof (this.groupByRenderer) === 'undefined' ? false : this.groupByRenderer,
+            groupByField: typeof (this.groupByField) === 'undefined' ? false : this.groupByField,
             fields: this.fieldOptionsTable ? this._getFields(this.fieldOptionsTable) : null,
-            groupField: this.groupOptionsTable ? this._getFields(this.groupOptionsTable)[0] : null
+            groupField: this.groupOptionsTable ? this._getFields(this.groupOptionsTable)[0] : null,
+            groupByRendererOptions: {
+              fields: groupByRendererFields,
+              values: vals
+            }
           }
         };
       },
@@ -639,25 +761,11 @@ define(['dojo/_base/declare',
         html.setStyle(this.featureFont, 'display', v ? "block" : "none");
       },
 
-      //_rdoThemeClusterChanged: function (v) {
-      //  if (v) {
-      //    this.clusterType = "ThemeCluster";
-      //    html.setStyle(this.clusterPicker.domNode, 'display', !v ? "block" : "none");
-      //  }
-      //},
-
-      //_rdoCustomClusterChanged: function (v) {
-      //  if (v) {
-      //    this.clusterType = "CustomCluster";
-      //    html.setStyle(this.clusterPicker.domNode, 'display', v ? "block" : "none");
-      //  }
-      //},
-
       _rdoLayerIconChanged: function (v) {
         if (v) {
           this.iconType = "LayerIcon";
         }
-        html.setStyle(this.uploadCustomIcon, 'display', !v ? "block" : "none");
+        html.setStyle(this.imageIconChooser.domNode, 'display', !v ? "block" : "none");
         html.setStyle(this.customIconPlaceholder, 'display', !v ? "block" : "none");
       },
 
@@ -665,7 +773,7 @@ define(['dojo/_base/declare',
         if (v) {
           this.iconType = "CustomIcon";
         }
-        html.setStyle(this.uploadCustomIcon, 'display', v ? "block" : "none");
+        html.setStyle(this.imageIconChooser.domNode, 'display', v ? "block" : "none");
         html.setStyle(this.customIconPlaceholder, 'display', v ? "block" : "none");
       },
 
@@ -692,7 +800,8 @@ define(['dojo/_base/declare',
       },
 
       _loadLayerSymbol: function () {
-        //TODO check for MapServer renderer types other than just classBreaks and uniqueValues..
+        this.infos = undefined;
+        this.ren = undefined;
         if (typeof (this.renderer) !== 'undefined') {
           var renderer = this.renderer;
           var sym;
@@ -724,6 +833,7 @@ define(['dojo/_base/declare',
                 });
               }
             }
+            this.infos = infos;
             if (infos.length > 0) {
               this.layerSym.appendChild(this._createCombinedImageDataDiv(infos));
             } else {
@@ -741,6 +851,7 @@ define(['dojo/_base/declare',
             this.symbolInfo.symbolOverride = true;
           }
           if (ren) {
+            this.ren = ren;
             this.layerSym.innerHTML = "<div></div>";
             this.layerSym.appendChild(this._createCombinedImageDataDiv(ren));
             html.setStyle(this.layerSym, "cursor", "pointer");
@@ -944,41 +1055,30 @@ define(['dojo/_base/declare',
         return symbol;
       },
 
-      _editIcon: function (type) {
-        this.fileInput.value = null;
-        var reader = new FileReader();
-        reader.onload = lang.hitch(this, function () {
-          var node;
-          var title;
-          if (type === "Symbol") {
-            node = this.customSymbolPlaceholder;
-            title = this.nls.editCustomSymbol;
-          } else {
-            node = this.customIconPlaceholder;
-            title = this.nls.editCustomIcon;
-          }
-          node.innerHTML = "<div></div>";
-
-          var a = domConstruct.create("div", {
-            'class': "customPlaceholder",
-            innerHTML: ['<img class="customPlaceholder" src="', reader.result, '"/>'].join(''),
-            title: title
-          });
-
-          node.innerHTML = a.innerHTML;
-        });
-
-        this.fileInput.onchange = lang.hitch(this, function () {
-          var f = this.fileInput.files[0];
-          reader.readAsDataURL(f);
-        });
-
-        this.fileInput.click();
+      uploadImage: function (type, data) {
+        var node = type === "Symbol" ? this.customSymbolPlaceholder : this.customIconPlaceholder;
+        node.innerHTML = "";
+        node.innerHTML = domConstruct.create("div", {
+          'class': "customPlaceholder",
+          innerHTML: ['<img class="customPlaceholder" src="', data, '"/>'].join(''),
+          title: type === "Symbol" ? this.nls.editCustomSymbol : this.nls.editCustomIcon
+        }).innerHTML;
       },
 
       _chkGroupChanged: function(v){
         this.groupFeaturesEnabled = v;
+        html.setStyle(this.groupByOptions, 'display', v ? "inline-block" : "none");
+      },
+
+      _rdoGroupByFieldChanged: function (v) {
+        this.groupByField = v;
+        this.rdoGroupField.set('checked', v);
         html.setStyle(this.groupFieldOptions, 'display', v ? "inline-block" : "none");
+      },
+
+      _rdoGroupByRendererChanged: function (v) {
+        this.groupByRenderer = v;
+        this.rdoGroupRenderer.set('checked', v);
       },
 
       destroy: function () {

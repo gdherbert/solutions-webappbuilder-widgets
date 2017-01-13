@@ -126,6 +126,7 @@ define([
     _tabContainer: null, // to store object of tab container
     _outputResultCount: 0, // to track count of output service execution
     _outputResultArr: [], // to store output response
+	_numTimesOpened: 0,
     savedLayers: [],
     savedFeatureObjectId: null,
 
@@ -190,6 +191,56 @@ define([
       this._removeAllGraphicLayers();
       this.inherited(arguments);
     },
+	
+	/**
+     * Add back the graphic layers upon opening.
+     */
+    onOpen: function() {
+      this._numTimesOpened = this._numTimesOpened + 1;
+
+      if (this._numTimesOpened > 1) {
+        this._addGraphicLayersBackToMap();
+      }
+
+      this.inherited(arguments);
+    },
+
+    /**
+     * Clear the results and remove all graphic layers upon closing.
+     */
+    onClose: function() {
+      this._clearResults();
+      this._removeAllGraphicLayers();
+      this.inherited(arguments);
+    },
+
+	/**
+	 * Adds all graphic layers back to the map if they already exist.  This allows
+	 * multiple instances of the network trace widget to be used in the same application.
+	 *
+	 * @private
+	 */
+	_addGraphicLayersBackToMap: function() {
+      for (var i in this.resultLayers) {
+        this.map.addLayer(this.resultLayers[i]);
+      }
+
+      if (this.overviewInfo && this.overviewInfo.layer) {
+        this.map.addLayer(this.overviewInfo.layer);
+      }
+
+      if (this.overviewGraphicsLayer) {
+        this.map.addLayer(this.overviewGraphicsLayer);
+      }
+
+      if (this.animatedLayer) {
+        this.map.addLayer(this.animatedLayer);
+      }
+
+      for (var k in this.gpInputDetails) {
+        this.map.addLayer(this.gpInputDetails[k]);
+      }
+	},
 
     /**
     * This function will set the display text for run button

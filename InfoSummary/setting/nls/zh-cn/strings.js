@@ -21,9 +21,9 @@ define({
   "rdoCustom": "使用图像",
   "chkCluster": "启用聚类",
   "defineClusterSymbol": "指定聚类符号",
-  "rdoEsri": "选择符号",
+  "rdoEsri": "选取符号",
   "rdoLayerIcon": "使用地图符号",
-  "rdoCustomIcon": "使用图像",
+  "rdoCustomIcon": "使用影像",
   "editCustomSymbol": "编辑自定义符号",
   "editCustomIcon": "编辑自定义图标",
   "missingRefreshValue": "请提供刷新间隔值。",
@@ -33,7 +33,7 @@ define({
   "refreshUnit": "分钟。",
   "symbolOptions": "符号",
   "panelFeatureDisplay": "面板",
-  "chkGroup": "对要素进行分组",
+  "chkGroup": "分组要素",
   "selectField": "字段",
   "fieldLabel": "标注",
   "addField": "添加字段",
@@ -48,5 +48,7 @@ define({
   "hidePanelHelp": "启用/禁用主面板显示。",
   "continuousRefreshHelp": "注意：将连续发生要素集合刷新。",
   "panelCountOptionHelp": "启用/禁用要素计数显示。",
-  "panelIconOptionHelp": "启用/禁用主面板上的徽标显示。"
+  "panelIconOptionHelp": "启用/禁用主面板上的徽标显示。",
+  "rdoGroupByField": "按字段",
+  "rdoGroupByRenderer": "按渲染器"
 });

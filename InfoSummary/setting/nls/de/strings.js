@@ -48,5 +48,7 @@ define({
   "hidePanelHelp": "Anzeige des Hauptbereichs aktivieren/deaktivieren",
   "continuousRefreshHelp": "Hinweis: Die Aktualisierung der Feature-Sammlung wird kontinuierlich ausgeführt.",
   "panelCountOptionHelp": "Anzeige der Feature-Anzahl aktivieren/deaktivieren",
-  "panelIconOptionHelp": "Anzeige eines Logos im Hauptbereich aktivieren/deaktivieren"
+  "panelIconOptionHelp": "Anzeige eines Logos im Hauptbereich aktivieren/deaktivieren",
+  "rdoGroupByField": "nach Feld",
+  "rdoGroupByRenderer": "nach Renderer"
 });

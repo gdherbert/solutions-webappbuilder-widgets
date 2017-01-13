@@ -5,6 +5,7 @@
     helpText: "InfoSummary Help text"
   }),
   "ar": 1,
+  "bs": 1,
   "cs": 1,
   "da": 1,
   "de": 1,
@@ -16,6 +17,7 @@
   "he": 1,
   "hr": 1,
   "it": 1,
+  "id": 1,
   "ja": 1,
   "ko": 1,
   "lt": 1,

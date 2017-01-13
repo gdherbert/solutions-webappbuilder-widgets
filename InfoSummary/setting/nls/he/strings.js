@@ -48,5 +48,7 @@ define({
   "hidePanelHelp": "הפעל/השבת תצוגת חלונית ראשית.",
   "continuousRefreshHelp": "הערה: ריענון אוסף הישויות יתבצע באופן מתמשך.",
   "panelCountOptionHelp": "הפעל/השבת תצוגת ספירת ישויות.",
-  "panelIconOptionHelp": "הפעל /השבת תצוגה של לוגו בחלונית הראשית."
+  "panelIconOptionHelp": "הפעל /השבת תצוגה של לוגו בחלונית הראשית.",
+  "rdoGroupByField": "לפי שדה",
+  "rdoGroupByRenderer": "לפי Renderer"
 });

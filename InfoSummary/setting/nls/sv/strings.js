@@ -48,5 +48,7 @@ define({
   "hidePanelHelp": "Aktivera/inaktivera huvudpanelens skärm.",
   "continuousRefreshHelp": "Obs! Geoobjektssamlingen kommer att uppdateras kontinuerligt.",
   "panelCountOptionHelp": "Aktivera/inaktivera visning av antalet geoobjekt.",
-  "panelIconOptionHelp": "Aktivera/inaktivera visning av en logotyp på huvudpanelen."
+  "panelIconOptionHelp": "Aktivera/inaktivera visning av en logotyp på huvudpanelen.",
+  "rdoGroupByField": "efter fält",
+  "rdoGroupByRenderer": "efter renderare"
 });

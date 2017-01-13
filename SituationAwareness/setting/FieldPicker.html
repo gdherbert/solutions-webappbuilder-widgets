@@ -6,6 +6,13 @@
     </div>
     <div data-dojo-attach-point="fieldTable"></div>
   </div>
+  <div class="jimu-r-row pad-top20" data-dojo-attach-point="chk_countOnly">
+    <div class="col-1-3" data-dojo-attach-point="div_chkCount">
+      <input data-dojo-attach-point="chk_count_only" title="${nls.count_checkBox}"
+             data-dojo-attach-event="onChange:chkCountChanged" data-dojo-type="dijit/form/CheckBox" />
+      <span class="label">${nls.count_checkBox}</span>
+    </div>
+  </div>
   <div class="jimu-r-row pad-top20" data-dojo-attach-point="chk_summary">
     <div class="col-1-3" data-dojo-attach-point="div_chkCount">
       <input data-dojo-attach-point="chk_count" title="${nls.count_checkBox}" 

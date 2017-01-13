@@ -48,5 +48,7 @@ define({
   "hidePanelHelp": "기본 패널 보기를 활성화/비활성화합니다.",
   "continuousRefreshHelp": "참고: 피처 컬렉션 새로 고침이 연속으로 실행됩니다.",
   "panelCountOptionHelp": "피처 개수 보기를 활성화/비활성화합니다.",
-  "panelIconOptionHelp": "기본 패널에서 로고 보기를 활성화/비활성화합니다."
+  "panelIconOptionHelp": "기본 패널에서 로고 보기를 활성화/비활성화합니다.",
+  "rdoGroupByField": "필드 기준",
+  "rdoGroupByRenderer": "렌더러 기준"
 });

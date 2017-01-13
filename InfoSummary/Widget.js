@@ -45,10 +45,10 @@ define(['jimu/BaseWidget',
 "esri/tasks/FeatureSet",
 "esri/arcgis/utils",
 'esri/symbols/jsonUtils',
+'esri/request',
 "esri/renderers/SimpleRenderer",
 "esri/renderers/jsonUtils",
 './js/ClusterLayer',
-'./js/ThemeColorManager',
 'esri/layers/LayerDrawingOptions'
 ],
 function (BaseWidget,
@@ -82,10 +82,10 @@ function (BaseWidget,
   FeatureSet,
   arcgisUtils,
   jsonUtils,
+  esriRequest,
   SimpleRenderer,
   jsonUtil,
   ClusterLayer,
-  ThemeColorManager,
   LayerDrawingOptions
   ) {
   return declare([BaseWidget, _WidgetsInTemplateMixin], {
@@ -106,10 +106,46 @@ function (BaseWidget,
 
     postCreate: function () {
       this.inherited(arguments);
+      this.setupOrientationChange();
+      this.inPanelOverrides(this.appConfig.theme.name);
       this.configLayerInfos = this.config.layerInfos;
       this.layerList = {};
       //populates this.opLayers from this.map and creates the panel
       this._initWidget();
+    },
+
+    setupOrientationChange: function () {
+      if (window.hasOwnProperty('matchMedia')) {
+        var mql = window.matchMedia("(orientation: portrait)");
+        mql.addListener(lang.hitch(this, this._orientationChange));
+      }
+    },
+
+    _orientationChange: function () {
+      if (window.innerWidth <= 470) {
+        var m = dom.byId('map');
+        m.style.bottom = window.innerHeight / 2 + "px";
+      } else {
+        this._resetMapDiv();
+      }
+    },
+
+    inPanelOverrides: function (themeName) {
+      this.isDartTheme = themeName === "DartTheme";
+
+      var add = false;
+      if (this.isDartTheme) {
+        if (domClass.contains(this.pageContent, 'pageContent')) {
+          domClass.remove(this.pageContent, 'pageContent');
+          domClass.add(this.pageContent, 'pageContent-dart');
+        }
+        add = true;
+      } else {
+        if (domClass.contains(this.pageContent, 'pageContent-dart')) {
+          domClass.remove(this.pageContent, 'pageContent-dart');
+          domClass.add(this.pageContent, 'pageContent');
+        }
+      }
     },
 
     startup: function () {
@@ -162,7 +198,16 @@ function (BaseWidget,
 
         var l;
         if (_Pl && _Pl.visibleLayers) {
-          if (visibleSubLayers.length === 0) {
+          var _foundIt = false;
+          sub_layers_id_loop:
+          for (var ii = 0; ii < visibleSubLayers.length; ii++) {
+            var subVizLyrId = visibleSubLayers[ii].id;
+            if (subVizLyrId === _Pl.id) {
+              _foundIt = true;
+              break sub_layers_id_loop;
+            }
+          }
+          if (visibleSubLayers.length === 0 || !_foundIt) {
             visibleSubLayers.push({
               id: _Pl.id,
               layers: _Pl.visibleLayers
@@ -317,7 +362,7 @@ function (BaseWidget,
         if (layerListLayer.type !== "ClusterLayer") {
           if (!checkedTime && layerListLayer.li) {
             if (layerListLayer.li.itemId) {
-              arcgisUtils.getItem(layerListLayer.li.itemId).then(lang.hitch(this, this._updateItem));
+              this.getItem(layerListLayer.li.itemId);
               checkedTime = true;
             }
           }
@@ -358,6 +403,40 @@ function (BaseWidget,
       }
     },
 
+    getItem: function (id) {
+      var portalUrl = window.portalUrl.substr(-1) !== '/' ? window.portalUrl += '/' : window.portalUrl;
+      var url = portalUrl + "sharing/rest/content/items/" + id;
+      esriRequest({
+        url: url,
+        content: {
+          f: "json",
+          requestTime: Date.now()
+        }
+      }).then(lang.hitch(this, function (response) {
+        if (response) {
+          var itemModified = response.modified;
+          var update = true;
+          if (this.lastModifiedTime) {
+            update = this.lastModifiedTime < itemModified;
+          }
+          if (this.currentQueryList.indexOf(id) > -1) {
+            this.currentQueryList.splice(this.currentQueryList.indexOf(id), 1);
+          }
+          if (update) {
+            this.lastModifiedTime = itemModified;
+            this._updatePanelTime(itemModified);
+            esriRequest({
+              url: url + '/data',
+              content: {
+                f: "json",
+                requestTime: Date.now()
+              }
+            }).then(lang.hitch(this, this._updateItem, id));
+          }
+        }
+      }));
+    },
+
     _updatePanelTime: function (modifiedTime) {
       if (!this.hidePanel) {
         this.lastUpdated.innerHTML = "<div></div>";
@@ -380,26 +459,18 @@ function (BaseWidget,
         if (id) {
           if (this.currentQueryList.indexOf(id) === -1) {
             this.currentQueryList.push(id);
-            arcgisUtils.getItem(id).then(lang.hitch(this, this._updateItem));
+            this.getItem(id);
           }
         }
       }
     },
 
-    _updateItem: function (response) {
-      var update = true;
-      if (this.lastModifiedTime) {
-        update = this.lastModifiedTime < response.item.modified;
+    _updateItem: function (id, response) {
+      var featureCollection = response;
+      for (var i = 0; i < featureCollection.layers.length; i++) {
+        this._updateLayerItem(featureCollection.layers[i], this.lastModifiedTime);
       }
-      if (update) {
-        this._updatePanelTime(response.item.modified);
-        var featureCollection = response.itemData;
-        for (var i = 0; i < featureCollection.layers.length; i++) {
-          this._updateLayerItem(featureCollection.layers[i], response.item.modified);
-        }
-      }
-      this.currentQueryList.splice(this.currentQueryList.indexOf(response.item.id), 1);
-      this.lastModifiedTime = response.item.modified;
+      this.currentQueryList.splice(this.currentQueryList.indexOf(id), 1);
     },
 
     _updateLayerItem: function (responseLayer) {
@@ -621,14 +692,22 @@ function (BaseWidget,
           html.removeClass(this.pageHeader, "pageHeaderNoIcon");
           html.removeClass(this.pageHeader, "pageHeaderNoIconRefresh");
           html.removeClass(this.pageHeader, "pageHeader");
-          html.addClass(this.pageHeader, "pageHeaderRefresh");
+          if (this.config.mainPanelText !== "") {
+            html.addClass(this.pageHeader, "pageHeaderRefresh");
+          } else {
+            html.addClass(this.pageHeader, "pageHeaderRefreshNoText");
+          }
         }
 
         if (this.pageBody) {
           html.removeClass(this.pageBody, "pageBodyNoIcon");
           html.removeClass(this.pageBody, "pageBodyNoIconRefresh");
           html.removeClass(this.pageBody, "pageBody");
-          html.addClass(this.pageBody, "pageBodyRefresh");
+          if (this.config.mainPanelText !== "") {
+            html.addClass(this.pageBody, "pageBodyRefresh");
+          } else {
+            html.addClass(this.pageBody, "pageBodyRefreshNoText");
+          }
         }
 
         if (this.pageTitle) {
@@ -676,20 +755,6 @@ function (BaseWidget,
       }
 
       this.addMapLayers();
-
-      this.legendNodes.push({
-        node: this.pageHeader,
-        styleProp: "background-color"
-      });
-
-      this.themeColorManager = new ThemeColorManager({
-        updateNodes: this.legendNodes,
-        layerList: this.layerList,
-        theme: this.appConfig.theme,
-        stylename: this.styleName,
-        ph: this.pageHeader,
-        w: window
-      });
     },
 
     updateThemeClusterSymbol: function(lyrInfo, i){
@@ -840,28 +905,16 @@ function (BaseWidget,
     },
 
     addMapLayers: function () {
-      //var reorderLayers = [];
       var ids = Object.keys(this.layerList).reverse();
       for (var i = 0; i < ids.length; i++) {
         var id = ids[i];
         var l = this.layerList[id];
         if (l.type && l.type === "ClusterLayer") {
-          //if (!(this.map.graphicsLayerIds.indexOf(id) > -1) || !(this.map._layers.indexOf(id) > -1)) {
           if (this.map.graphicsLayerIds.indexOf(id) === -1) {
             this.map.addLayer(l.layerObject);
           }
-          //temp = l.layerObject._parentLayer;
-          //temp.setVisibility(true);
-          //this.own(on(temp, "update-end", lang.hitch(this, this.onUpdateEnd)));
         }
-        //reorderLayers.push(l.layerObject);
       }
-      //if (reorderLayers.length > 0) {
-      //  array.forEach(reorderLayers, lang.hitch(this, function (lyr) {
-      //    this.map.reorderLayer(lyr, ids.indexOf(lyr.id));
-      //  }));
-      //}
-      //reorderLayers = null;
     },
 
     _getSubLayerByURL: function (id) {
@@ -1023,18 +1076,39 @@ function (BaseWidget,
       }
     },
 
+    _onRecNodeMouseover: function (rec) {
+      domClass.add(rec, this.isDartTheme ? "layer-row-mouseover-dart" : "layer-row-mouseover");
+    },
+
+    _onRecNodeMouseout: function (rec) {
+      domClass.remove(rec, this.isDartTheme ? "layer-row-mouseover-dart" : "layer-row-mouseover");
+    },
+
     _addPanelItem: function (layer, lyrInfo) {
       var id = layer.visibleLayers ? lyrInfo.id : layer.id;
       var lyrType = this.layerList[id].type;
       //this.layerList[id].updateList = false;
-
+      var cssAry;
+      if (this.isDartTheme) {
+        cssAry = ['rec-dart', 'expand-dart', 'expandDown-dart', 'solidBorder-dart'];
+      }else {
+        cssAry = ['rec', 'expand', 'expandDown', 'solidBorder'];
+      }
       var rec = domConstruct.create("div", {
-        'class': "rec solidBorder",
+        'class': cssAry[0] + " " + cssAry[3],
         id: 'rec_' + id
       }, this.pageMain);
 
+      //TODO should just do a similar dart specific hover
+      this.own(on(rec,
+        'mouseover',
+        lang.hitch(this, this._onRecNodeMouseover, rec)));
+      this.own(on(rec,
+        'mouseout',
+        lang.hitch(this, this._onRecNodeMouseout, rec)));
+
       domConstruct.create("div", {
-        'class': "expand expandDown",
+        'class': cssAry[1] + " " + cssAry[2],
         id: "exp_" + id
       }, rec);
 
@@ -1052,23 +1126,24 @@ function (BaseWidget,
       recIcon.innerHTML = lyrInfo.panelImageData;
       domStyle.set(recIcon.firstChild, "border-radius", "41px");
 
+      var _append = this.isDartTheme ? ' darkThemeColor' : ' lightThemeColor';
       var recLabel;
       var recNum;
       if (this.config.countEnabled) {
         recLabel = domConstruct.create("div", {
-          'class': "recLabel",
+          'class': "recLabel" + _append,
           id: "recLabel_" + id,
           innerHTML: "<p>" + lyrInfo.label + "</p>"
         }, rec);
         html.setStyle(recLabel, "top", "20px");
         recNum = domConstruct.create("div", {
-          'class': "recNum",
+          'class': "recNum" + _append,
           id: "recNum_" + id,
           innerHTML: ""
         }, rec);
       } else {
         recLabel = domConstruct.create("div", {
-          'class': "recLabelNoCount",
+          'class': "recLabelNoCount" + _append,
           id: "recLabel_" + id,
           innerHTML: "<p>" + lyrInfo.label + "</p>"
         }, rec);
@@ -1250,20 +1325,28 @@ function (BaseWidget,
     },
 
     _addSearching: function (id) {
-      if (domClass.contains("exp_" + id, "expandDown")) {
-        domClass.remove("exp_" + id, "expandDown");
-        domClass.add("exp_" + id, "expandSearching");
+      var eD = this.isDartTheme ? 'expandDown-dart' : 'expandDown';
+      var eU = this.isDartTheme ? 'expandUp-dart' : 'expandUp';
+      //TODO consider if this needs to be specific for dart??
+      var eS = "expandSearching";
+      if (domClass.contains("exp_" + id, eD)) {
+        domClass.remove("exp_" + id, eD);
+        domClass.add("exp_" + id, eS);
       }
-      if (domClass.contains("exp_" + id, "expandUp")) {
-        domClass.remove("exp_" + id, "expandUp");
-        domClass.add("exp_" + id, "expandSearching");
+      if (domClass.contains("exp_" + id, eU)) {
+        domClass.remove("exp_" + id, eU);
+        domClass.add("exp_" + id, eS);
       }
     },
 
     _removeSearching: function (id, legendOpen) {
-      if (domClass.contains("exp_" + id, "expandSearching")) {
-        domClass.remove("exp_" + id, "expandSearching");
-        domClass.add("exp_" + id, legendOpen ? "expandUp" : "expandDown");
+      var eD = this.isDartTheme ? 'expandDown-dart' : 'expandDown';
+      var eU = this.isDartTheme ? 'expandUp-dart' : 'expandUp';
+      //TODO consider if this needs to be specific for dart??
+      var eS = "expandSearching";
+      if (domClass.contains("exp_" + id, eS)) {
+        domClass.remove("exp_" + id, eS);
+        domClass.add("exp_" + id, legendOpen ? eU : eD);
       }
     },
 
@@ -1381,20 +1464,11 @@ function (BaseWidget,
 
     _updateUI: function (styleName) {
       this.styleName = styleName;
-      if (Object.keys(this.layerList).length > 0) {
-        this.themeColorManager = new ThemeColorManager({
-          updateNodes: this.legendNodes,
-          layerList: this.layerList,
-          theme: this.appConfig.theme,
-          stylename: styleName,
-          ph: this.pageHeader,
-          w: window
-        });
-      }
     },
 
     _toggleLayer: function (obj, e) {
       e.stopPropagation();
+      var _append = this.isDartTheme ? ' darkThemeColor' : ' lightThemeColor';
       this.map.infoWindow.hide();
 
       var id = obj.id ? obj.id : obj.layerObject.id;
@@ -1411,6 +1485,10 @@ function (BaseWidget,
       }
 
       if (lyr) {
+        var visScalRange = true;
+        if (lyr.layerObject.hasOwnProperty('visibleAtMapScale')) {
+          visScalRange = lyr.layerObject.visibleAtMapScale;
+        }
         var hasSubLayerId = false;
         if (lyr.li) {
           if (lyr.li.hasOwnProperty("subLayerId")) {
@@ -1420,6 +1498,7 @@ function (BaseWidget,
         var visLayers;
         var l;
         var c = dom.byId("recLabel_" + id);
+
         if (domClass.contains("recIcon_" + id, "active")) {
           domClass.remove("recIcon_" + id, "active");
           if (hasSubLayerId && lyr.type !== 'ClusterLayer') {
@@ -1450,7 +1529,8 @@ function (BaseWidget,
           if (this.config.countEnabled) {
             if (domClass.contains("recNum_" + id, "recNum")) {
               domClass.remove("recNum_" + id, "recNum");
-              domClass.add("recNum_" + id, "recNumInActive");
+
+              domClass.add("recNum_" + id, "recNumInActive" + _append);
             }
           }
           if (c && c.firstChild) {
@@ -1464,9 +1544,13 @@ function (BaseWidget,
               this.layerList[id].legendOpen = false;
               domClass.remove("legend_" + id, "legendOn");
               domClass.add("legend_" + id, "legendOff");
-              if (domClass.contains("exp_" + id, "expandUp")) {
-                domClass.remove("exp_" + id, "expandUp");
-                domClass.add("exp_" + id, "expandDown");
+              var eD = this.isDartTheme ? 'expandDown-dart' : 'expandDown';
+              var eU = this.isDartTheme ? 'expandUp-dart' : 'expandUp';
+              //TODO consider if this needs to be specific for dart??
+              //var eS = "expandSearching";
+              if (domClass.contains("exp_" + id, eU)) {
+                domClass.remove("exp_" + id, eU);
+                domClass.add("exp_" + id, eD);
               }
             }
           }
@@ -1487,7 +1571,7 @@ function (BaseWidget,
           } else if (lyr) {
             lyr.layerObject.setVisibility(true);
             if (lyr.type === 'ClusterLayer') {
-              lyr.layerObject.handleMapExtentChange({levelChange: true});
+              lyr.layerObject.handleMapExtentChange({ levelChange: true });
               lyr.layerObject.flashFeatures();
             }
             this.layerList[id].visible = true;
@@ -1509,13 +1593,13 @@ function (BaseWidget,
           if (this.config.countEnabled) {
             if (domClass.contains("recNum_" + id, "recNumInActive")) {
               domClass.remove("recNum_" + id, "recNumInActive");
-              domClass.add("recNum_" + id, "recNum");
+              domClass.add("recNum_" + id, "recNum" + _append);
             }
           }
           if (c && c.firstChild) {
             domClass.remove(c.firstChild, "inActive");
           }
-          if (domClass.contains("exp_" + id, "expandInActive")) {
+          if (domClass.contains("exp_" + id, "expandInActive") && visScalRange) {
             domClass.remove("exp_" + id, "expandInActive");
           }
           if (lyr.toggleLegend) {
@@ -1556,9 +1640,13 @@ function (BaseWidget,
           if (domClass.contains("legend_" + id, "legendOn")) {
             this.layerList[id].legendOpen = false;
             //this.layerList[id].updateList = false;
-            if (domClass.contains("exp_" + id, "expandUp")) {
-              domClass.remove("exp_" + id, "expandUp");
-              domClass.add("exp_" + id, "expandDown");
+            var eD = this.isDartTheme ? 'expandDown-dart' : 'expandDown';
+            var eU = this.isDartTheme ? 'expandUp-dart' : 'expandUp';
+            //TODO consider if this needs to be specific for dart??
+            //var eS = "expandSearching";
+            if (domClass.contains("exp_" + id, eU)) {
+              domClass.remove("exp_" + id, eU);
+              domClass.add("exp_" + id, eD);
             }
             domClass.remove("legend_" + id, "legendOn");
             domClass.add("legend_" + id, "legendOff");
@@ -1570,24 +1658,29 @@ function (BaseWidget,
 
     _toggleGroup: function (obj, e) {
       var id = e.currentTarget.id.slice(0, -2);
+      var fI = this.isDartTheme ? 'featureItem-dart' : 'featureItem';
 
       var toggle = true;
       if (e.target.parentNode) {
         if (e.target.parentNode.id !== "") {
-          if (domClass.contains(e.target.parentNode.id, "featureItem")) {
+          if (domClass.contains(e.target.parentNode.id, fI)) {
             toggle = false;
           }
         }
         if (e.target.id !== "") {
-          if (domClass.contains(e.target.id, "featureItem")) {
+          if (domClass.contains(e.target.id, fI)) {
             toggle = false;
           }
         }
       }
 
+      var gII = this.isDartTheme ? "groupItemImage-dart" : "groupItemImage";
+      var gIIUp = this.isDartTheme ? "groupItemImageUp-dart" : "groupItemImageUp";
+      var gIIDown = this.isDartTheme ? "groupItemImageDown-dart" : "groupItemImageDown";
       if (toggle) {
         var lId = obj.layerObject.id in this.layerList ? obj.layerObject.id : obj.li.id;
         var node = document.getElementById(e.currentTarget.id);
+        var _idx = node.childNodes[0].childNodes.length - 1;
         if (domClass.contains(id, "groupOff")) {
           if (this.layerList[lId].openGroups && this.layerList[lId].openGroups.length > 0) {
             if (this.layerList[lId].openGroups.indexOf(id) === -1) {
@@ -1599,10 +1692,9 @@ function (BaseWidget,
           domClass.remove(id, "groupOff");
           domClass.add(id, "groupOn");
           this.layerList[lId].groupOpen = true;
-
-          if (node.childNodes[0].childNodes[2].childNodes[0].className.indexOf("groupItemImage") > -1) {
-            html.removeClass(node.childNodes[0].childNodes[2].childNodes[0], "groupItemImageDown");
-            html.addClass(node.childNodes[0].childNodes[2].childNodes[0], "groupItemImageUp");
+          if (node.childNodes[0].childNodes[_idx].childNodes[0].className.indexOf(gII) > -1) {
+            html.removeClass(node.childNodes[0].childNodes[_idx].childNodes[0], gIIDown);
+            html.addClass(node.childNodes[0].childNodes[_idx].childNodes[0], gIIUp);
           }
         } else {
           if (domClass.contains(id, "groupOn")) {
@@ -1620,9 +1712,9 @@ function (BaseWidget,
             } else {
               this.layerList[lId].groupOpen = false;
             }
-            if (node.childNodes[0].childNodes[2].childNodes[0].className.indexOf("groupItemImage") > -1) {
-              html.removeClass(node.childNodes[0].childNodes[2].childNodes[0], "groupItemImageUp");
-              html.addClass(e.currentTarget.childNodes[0].childNodes[2].childNodes[0], "groupItemImageDown");
+            if (node.childNodes[0].childNodes[_idx].childNodes[0].className.indexOf(gII) > -1) {
+              html.removeClass(node.childNodes[0].childNodes[_idx].childNodes[0], gIIUp);
+              html.addClass(e.currentTarget.childNodes[0].childNodes[_idx].childNodes[0], gIIDown);
             }
           }
         }
@@ -1633,6 +1725,9 @@ function (BaseWidget,
     onAppConfigChanged: function (appConfig, reason, changedData) {
       switch (reason) {
         case 'themeChange':
+          //this.isDartTheme = changedData === "DartTheme";
+          this.inPanelOverrides(changedData);
+          break;
         case 'layoutChange':
           this.destroy();
           break;
@@ -1644,7 +1739,7 @@ function (BaseWidget,
           break;
         case 'widgetChange':
           this.widgetChange = true;
-          if (changedData && changedData.config.layerInfos) {
+          if (changedData && changedData.config && changedData.config.layerInfos) {
             this.removeOldClusterLayers(changedData.config.layerInfos);
           }
           break;
@@ -1655,7 +1750,14 @@ function (BaseWidget,
 
     _updateStyleColor: function (changedData) {
       setTimeout(lang.hitch(this, function () {
-        var bc = window.getComputedStyle(this.pageHeader, null).getPropertyValue('background-color');
+        var p = this.getPanel();
+        var node;
+        switch (this.appConfig.theme.name) {
+          default:
+            node = this.pageHeader;
+            break;
+        }
+        var bc = window.getComputedStyle(node, null).getPropertyValue('background-color');
         this._styleColor = Color.fromRgb(bc).toHex();
         for (var k in this.layerList) {
           var l = this.layerList[k];
@@ -1663,7 +1765,8 @@ function (BaseWidget,
             l.layerObject.setStyleColor(this._styleColor);
           }
         }
-      }), 500);
+        this._updateUI(changedData);
+      }), 50);
     },
 
     _clearMap: function () {
@@ -1834,7 +1937,6 @@ function (BaseWidget,
           this.mapExtentChangedHandler = undefined;
         }
       }
-
       this._resetMapDiv();
     },
 
@@ -1876,12 +1978,16 @@ function (BaseWidget,
       var updateNodes = [];
       for (var key in this.layerList) {
         var lyr = this.layerList[key];
+        var visScalRange = true;
+        if (lyr.layerObject.hasOwnProperty('visibleAtMapScale')) {
+          visScalRange = lyr.layerObject.visibleAtMapScale;
+        }
         if (!lyr.legendOpen || (lyr.groupEnabled && !lyr.groupOpen)) {
           this._clearList(lyr);
           if (lyr.li) {
             lyr.li.layerListExtentChanged = true;
           }
-          if (lyr.visible) {
+          if (lyr.visible && visScalRange) {
             if (lyr.li) {
               if (lyr.li.url && lyr.type !== "ClusterLayer" && typeof (lyr.layerObject.queryCount) === 'undefined') {
                 var url = lyr.li.url;
@@ -1902,7 +2008,6 @@ function (BaseWidget,
                   } else {
                     updateNodes.push(lyr.legendNode);
                   }
-                  //domClass.add(lyr.node.id, "searching");
                 }
               }
             }
@@ -1924,15 +2029,19 @@ function (BaseWidget,
                 this.countFeatures(lyr);
               }
             }
+          } else if (!visScalRange) {
+            this._updateList([], lyr.legendNode, lyr.node, [], true, lyr);
           }
         } else {
-          if (lyr.visible) {
+          if (lyr.visible && visScalRange) {
             lyr.updateList = true;
             if (lyr.layerObject._autoSnapshot) {
               this._loadList(lyr, lyr.updateList);
             } else {
               this._loadList(lyr, lyr.updateList);
             }
+          } else {
+            this._updateList([], lyr.legendNode, lyr.node, [], true, lyr);
           }
         }
       }
@@ -1969,6 +2078,7 @@ function (BaseWidget,
               if (r === 0) {
                 if (parent) {
                   html.addClass(parent, "recDefault");
+                  html.addClass(parent, "inActive");
                 }
                 if (en) {
                   html.addClass(en, "expandInActive");
@@ -1976,6 +2086,7 @@ function (BaseWidget,
               } else {
                 if (parent) {
                   html.removeClass(parent, "recDefault");
+                  html.removeClass(parent, "inActive");
                 }
                 if (en) {
                   html.removeClass(en, "expandInActive");
@@ -1991,13 +2102,17 @@ function (BaseWidget,
       var lyr = lyrInfo.layerObject;
       var legendNode = lyrInfo.legendNode;
       var node = lyrInfo.node;
-
+      var _needsGeom = true; //typeof (lyrInfo.legendOpen) !== 'undefined' && lyrInfo.legendOpen;
+      var visScalRange = true;
+      if (lyr.hasOwnProperty('visibleAtMapScale')) {
+        visScalRange = lyr.visibleAtMapScale;
+      }
       var queries = [];
       var q = new Query();
       q.geometry = this.map.extent;
       q.outFields = fields;
-      q.returnGeometry = true;
-      if (lyrInfo.visible) {
+      q.returnGeometry = _needsGeom;
+      if (lyrInfo.visible && visScalRange) {
         if (lyr.queryFeatures) {
           queries.push(lyr.queryFeatures(q));
         } else {
@@ -2006,8 +2121,11 @@ function (BaseWidget,
             var qt = new QueryTask(url);
             q.where = lyrInfo.filter ? lyrInfo.filter : "1=1";
             queries.push(qt.execute(q));
+            queries.push(qt.executeForIds(q));
           }
         }
+      } else {
+        this._updateList([], lyrInfo.legendNode, lyrInfo.node, [], true, lyrInfo);
       }
       if (queries.length > 0) {
         if (this.featurePromises) {
@@ -2016,11 +2134,37 @@ function (BaseWidget,
         }
         var featurePromises = all(queries);
         featurePromises.then(lang.hitch(this, function (results) {
-          if (results[0].features) {
-            setTimeout(lang.hitch(this, function () {
-              this._updateList(results[0].features, legendNode, node, fields, updateCount, lyrInfo);
-            }), 100);
+          var updateNode;
+          if (node) {
+            if (this.config.countEnabled) {
+              updateNode = node.parentNode;
+            } else {
+              updateNode = node.previousSibling;
+            }
           }
+          if (results && results[0]) {
+            if (results[0].features) {
+              setTimeout(lang.hitch(this, function () {
+                this._updateList(results[0].features, legendNode, node, fields, updateCount, lyrInfo);
+                if (this.config.countEnabled && results.length > 1) {
+                  if (results[1].length > 1000) {
+                    node.innerHTML = utils.localizeNumber(results[1].length);
+                  }
+                }
+              }), 100);
+            } else if (results[0].length > 0 && visScalRange) {
+              this._updateList(results[0], lyrInfo.legendNode, lyrInfo.node, [], true, lyrInfo, true);
+            } else {
+              this._updateList([], lyrInfo.legendNode, lyrInfo.node, [], true, lyrInfo);
+            }
+          } else {
+            if (this.config.countEnabled) {
+              node.innerHTML = utils.localizeNumber(0);
+            }
+            this.updateExpand(updateNode, true);
+          }
+          var s_id = lyrInfo.layerObject.id in this.layerList ? lyrInfo.layerObject.id : lyrInfo.li.id;
+          this._removeSearching(s_id, lyrInfo.legendOpen);
         }));
       }
     },
@@ -2059,7 +2203,7 @@ function (BaseWidget,
       }
     },
 
-    _updateList: function (features, legendNode, node, fields, updateCount, lyrInfo) {
+    _updateList: function (features, legendNode, node, fields, updateCount, lyrInfo, countOnly) {
       if (lyrInfo.type === 'ClusterLayer') {
         if (lyrInfo.layerObject.node) {
           if (domClass.contains(lyrInfo.layerObject.node.id, 'searching')) {
@@ -2081,7 +2225,9 @@ function (BaseWidget,
       }
       var updateNode = this.config.countEnabled ? node.parentNode : legendNode.previousSibling;
       this.updateExpand(updateNode, features.length === 0);
-
+      if (countOnly) {
+        return;
+      }
       if (features.length > 0) {
         var renderer;
         if (lyrInfo.type === "ClusterLayer") {
@@ -2095,12 +2241,18 @@ function (BaseWidget,
         var groupNodes = [];
         var finalGroupNodes = [];
         var finalDomNodes = [];
-
+        feature_loop:
         for (var i = 0; i < features.length; i++) {
           var groupAdded = false;
           var feature = features[i];
           if (typeof (feature.infoTemplate) === 'undefined' && infoTemplate) {
             feature.infoTemplate = infoTemplate;
+          }
+          var symbol;
+          if (renderer && renderer.getSymbol) {
+            symbol = renderer.getSymbol(feature);
+          } else if (feature.symbol) {
+            symbol = jsonUtils.fromJson(feature.symbol);
           }
           var id;
           var oidName;
@@ -2124,51 +2276,113 @@ function (BaseWidget,
             flds = fields;
             isNames = true;
           }
-          var displayString = this.getDisplayString(feature, lyrInfo, flds, displayOptions, oidName, isNames);
+          var displayStringObj = this.getDisplayString(feature, lyrInfo, flds, displayOptions, oidName, isNames);
+          var displayString = displayStringObj.displayString;
+          var aliasNames = displayStringObj.aliasNames;
           var groupField;
           var groupNode;
           var groupContainer;
           var displayValue;
+          var groupType;
           if (displayOptions.groupEnabled) {
-            groupField = displayOptions.groupField;
-            var gId = 'group_' + lyrInfo.li.id + "_" + groupField.name + "_" + feature.attributes[groupField.name];
+            var featureValue;
+            var _value;
+            var appendVal = undefined; // jshint ignore:line
+            if (typeof (displayOptions.groupByField) === 'undefined' || displayOptions.groupByField) {
+              groupField = displayOptions.groupField;
+              featureValue = feature.attributes[groupField.name];
+              groupType = 'byField';
+              appendVal = featureValue;
+            } else {
+              groupField = displayOptions.groupByRendererOptions.fields[0];
+              featureValue = feature.attributes[groupField.name];
+              var groubByFields = displayOptions.groupByRendererOptions.fields;
+              var groupByValues = displayOptions.groupByRendererOptions.values;
+              groupType = 'byRenderer';
+
+              if (featureValue !== null && featureValue !== "") {
+                expression_loop:
+                  for (var ii = 0; ii < groupByValues.length; ii++) {
+                    var _val = groupByValues[ii];
+                    var exp = _val.value;
+                    var expParts = exp.split("&&");
+                    if (expParts && expParts.length > 1) {
+                      exp = featureValue + expParts[0] + "&& " + featureValue + expParts[1];
+                    } else {
+                      exp = isNaN(featureValue) ? "'" + featureValue + "'" + _val.value : featureValue + _val.value;
+                    }
+                    if (eval(exp)) { // jshint ignore:line
+                      _value = _val;
+                      break expression_loop;
+                    }
+                  }
+                if (typeof (_value) !== 'undefined' && _value !== null) {
+                  appendVal = _value.label.replace(/ /g, '');
+                }
+              }
+            }
+            var gId = 'group_' + lyrInfo.li.id + "_" + groupField.name + "_" + appendVal;
             var addGroup = true;
             var n;
             if (groupNodes.length > 0) {
-              array.forEach(groupNodes, function (gNode) {
-                if (gId === gNode.id && feature.attributes[groupField.name] === gNode.value) {
-                  addGroup = false;
-                  n = gNode.node;
-                  groupContainer = gNode.parent;
-                  return;
+              node_loop:
+                for (var iii = 0; iii < groupNodes.length; iii++) {
+                  var gNode = groupNodes[iii];
+                  if (gId === gNode.id) {
+                    if (groupType === 'byField' && featureValue === gNode.value || groupType === 'byRenderer') {
+                      addGroup = false;
+                      n = gNode.node;
+                      groupContainer = gNode.parent;
+                      break node_loop;
+                    }
+                  }
                 }
-              });
             }
             if (addGroup) {
               groupAdded = true;
               groupContainer = domConstruct.create('div', {
-                'class': 'groupItem',
+                'class': this.isDartTheme ? 'groupItem-dart' : 'groupItem',
                 id: gId + "_c"
               });
               var groupTitle = domConstruct.create('div', {
-                'class': 'groupItemTitle',
+                'class': this.isDartTheme ? 'groupItemTitle-dart' : 'groupItemTitle',
                 id: gId + "_t"
               }, groupContainer);
-              //var test = '<div class="groupItem" id="{0}_c" ><div class="groupItem" id="{0}_t"></div></div>'.format(gId);
-              //TODO handle this in a better way
-              //this._createImageDataDiv(lang.clone(renderer.getSymbol(feature)), 30, 30, groupTitle);
               var label = "";
-              var title = groupField.name + ": ";
-              if (groupField.label !== "") {
-                label = groupField.label + ": ";
-                title = label;
+              var title = groupType === 'byRenderer' ? "" : groupField.name + ": ";
+              if(typeof (aliasNames) !== 'undefined') {
+                if (aliasNames.hasOwnProperty(groupField.name) && aliasNames[groupField.name] !== '') {
+                  if (groupType === 'byField') {
+                    title = aliasNames[groupField.name] + ": ";
+                  } else {
+                    title = "";
+                  }
+                }
               }
-              if (label === ": ") {
-                label = "";
-                title = "";
+              if (groupType === 'byField') {
+                if (typeof (groupField.label) !== 'undefined' && groupField.label !== "") {
+                  label = groupField.label + ": ";
+                  title = label;
+                }
+                if (label === ": ") {
+                  label = "";
+                  title = "";
+                }
+              } else {
+                if (typeof (_value) !== 'undefined') {
+                  if (typeof (_value.label) !== 'undefined' && _value.label !== "") {
+                    label = title + _value.label;
+                    title = label;
+                  }
+                } else {
+                  label = title + featureValue;
+                  title = label;
+                }
+                if (label === ": ") {
+                  label = "";
+                  title = "";
+                }
               }
-
-              var featureValue = feature.attributes[groupField.name];
               displayValue = featureValue;
               if (this._checkDateField(lyrInfo, groupField.name)) {
                 displayValue = this.formatDateValue(featureValue, groupField.name, lyrInfo);
@@ -2178,30 +2392,36 @@ function (BaseWidget,
                 displayValue = this.formatDomainValue(featureValue, domainField);
               }
 
+              if (groupType === 'byRenderer' && symbol) {
+                this._createImageDataDiv(lang.clone(symbol), 30, 30, groupTitle, isCustom);
+              }
+
               domConstruct.create('div', {
-                'class': 'groupField',
-                innerHTML: label + displayValue,
-                title: title + displayValue
+                'class': groupType === 'byField' ? 'groupField' : 'groupFieldImage',
+                innerHTML: groupType === 'byField' ? label + displayValue : label,
+                title: groupType === 'byField' ? title + displayValue : title
               }, groupTitle);
 
               var inGrpList = false;
               if (lyrInfo.openGroups && lyrInfo.openGroups.length > 0) {
                 inGrpList = lyrInfo.openGroups.indexOf(gId) > -1;
               }
-
+              var _append = this.isDartTheme ? ' darkThemeColor' : ' lightThemeColor';
               var groupCountNode = domConstruct.create('div', {
-                'class': 'groupCountLabel'
+                'class': 'groupCountLabel' + _append
               }, groupTitle);
 
               var imageContainer = domConstruct.create('div', { 'class': 'expandImageContainer' }, groupTitle);
 
-              var cNames = 'groupItemImage';
-              cNames += inGrpList ? ' groupItemImageUp' : ' groupItemImageDown';
+              var gIIUp = this.isDartTheme ? "groupItemImageUp-dart" : "groupItemImageUp";
+              var gIIDown = this.isDartTheme ? "groupItemImageDown-dart" : "groupItemImageDown";
+              var cNames = this.isDartTheme ? 'groupItemImage-dart' : 'groupItemImage';
+              cNames += inGrpList ? ' ' + gIIUp : ' ' + gIIDown;
               domConstruct.create('div', {
                 'class': cNames
               }, imageContainer);
 
-              cNames = 'groupItem';
+              cNames = this.isDartTheme ? 'groupItem-dart' : 'groupItem';
               if (lyrInfo.groupOpen && inGrpList) {
                 cNames += ' groupOn';
               } else if (lyrInfo.groupOpen && !inGrpList) {
@@ -2215,7 +2435,7 @@ function (BaseWidget,
               }, groupContainer);
 
               groupNodes.push({
-                id: 'group_' + lyrInfo.li.id + "_" + groupField.name + "_" + featureValue,
+                id: 'group_' + lyrInfo.li.id + "_" + groupField.name + "_" + appendVal,
                 node: groupNode,
                 parent: groupContainer,
                 value: featureValue
@@ -2240,64 +2460,33 @@ function (BaseWidget,
               groupNode = n;
             }
           }
-
           var featureItem = domConstruct.create('div', {
-            'class': 'featureItem',
+            'class': this.isDartTheme ? 'featureItem-dart' : 'featureItem',
             id: 'feature_' + lyrInfo.li.id + "_" + id
           });
-
-          //if (lyrInfo.infoTemplate) {
-          //  feature.infoTemplate = lyrInfo.infoTemplate;
-          //} else if (lyrInfo.li.infoTemplate) {
-          //  feature.infoTemplate = lyrInfo.li.infoTemplate;
-          //}
 
           var isCustom = false;
           if (lyrInfo.li && lyrInfo.li.symbolData) {
             isCustom = lyrInfo.li.symbolData.symbolType === "CustomSymbol";
           }
-          var symbol;
-          if (renderer && renderer.getSymbol) {
-            //TODO explore this pattern more with HTML and innerHTML
-            //var s = renderer.getSymbol(feature);
-            //if (this.symbols) {
-            //  var hasSym = array.forEach(this.symbols, function (symbol, s) {
-            //    if (symbol === s) {
-            //      return symbol;
-            //    }
-            //  });
-            //  if (typeof(hasSym) === 'undefined') {
-            //    this.symbols.push({
-            //      symbol: s,
-            //      div: this._createImageDataDiv(s, 30, 30, featureItem)
-            //    });
-            //  } else {
-            //    var a = domConstruct.create("div", { 'class': "imageDataGFX" }, featureItem);
-            //    a.appendChild(hasSym.div.firstChild);
-            //  }
-            //}
-            symbol = renderer.getSymbol(feature);
-          } else if (feature.symbol) {
-            symbol = jsonUtils.fromJson(feature.symbol);
-          }
           if (symbol) {
-            this._createImageDataDiv(lang.clone(symbol), 30, 30, featureItem, isCustom);
+            if (displayOptions.groupEnabled && groupType === 'byRenderer') {
+              //this._createImageDataDiv(lang.clone(symbol), 30, 30, groupTitle, isCustom);
+            } else {
+              this._createImageDataDiv(lang.clone(symbol), 30, 30, featureItem, isCustom);
+            }
           }
 
-          feature = this.updateDomainValues(feature, isNames, flds, lyrInfo);
+          //feature = this.updateDomainValues(feature, isNames, flds, lyrInfo);
           on(featureItem, "click", lang.hitch(this, this._panToFeature, feature));
 
           if (displayString.indexOf(" - ") > -1) {
             displayString = displayString.slice(0, -3);
           }
-          var _s;
-          if (window.isRTL) {
-            _s = "padding: 7px 45px 5px 5px; text-align: right;";
-          } else {
-            _s = "padding: 7px 5px 5px 45px; text-align: left;";
-          }
+          var _margin = displayOptions.groupEnabled && groupType === 'byRenderer' ? "15px" : "35px";
+          var _txtAlign = window.isRTL ? "right" : "left";
           domConstruct.create('div', {
-            style: _s,
+            style: "padding: 7px 5px 5px " + _margin + "; text-align: " + _txtAlign + ";",
             innerHTML: displayString,
             title: displayString
           }, featureItem);
@@ -2399,6 +2588,7 @@ function (BaseWidget,
       var featureValue;
       var fieldName;
       var aliasName;
+      var aliasNames = {};
       for (var a in fields) {
         fieldName = isNames ? fields[a] : a;
         dateField = this._checkDateField(lyrInfo, fieldName);
@@ -2416,6 +2606,10 @@ function (BaseWidget,
         if (domainField) {
           featureValue = this.formatDomainValue(featureValue, domainField);
         }
+        if (includeField) {
+          aliasNames[fieldName] = aliasName;
+        }
+
         if (aliasName) {
           fieldName = aliasName;
         }
@@ -2431,7 +2625,10 @@ function (BaseWidget,
           }
         }
       }
-      return displayString;
+      return {
+        displayString: displayString,
+        aliasNames: aliasNames
+      };
     },
 
     formatDomainValue: function (v, domain) {
@@ -2608,8 +2805,6 @@ function (BaseWidget,
         if (geom.type !== 'point') {
           geom = geom.getExtent().getCenter();
         }
-        //this.map.centerAt(geom);
-
         this._flashFeature(feature);
         if ((feature._layer && feature._layer.infoTemplate) || feature.infoTemplate) {
           this.map.infoWindow.setFeatures([feature]);

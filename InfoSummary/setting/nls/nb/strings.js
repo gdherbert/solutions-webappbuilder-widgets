@@ -48,5 +48,7 @@ define({
   "hidePanelHelp": "Aktiver/deaktiver hovedpanelvisning.",
   "continuousRefreshHelp": "Merk: Oppdatering av geoobjektsamlinger skjer kontinuerlig.",
   "panelCountOptionHelp": "Aktiver/deaktiver visning av antall geoobjekter.",
-  "panelIconOptionHelp": "Aktiver/deaktiver visning av en logo på hovedpanelet."
+  "panelIconOptionHelp": "Aktiver/deaktiver visning av en logo på hovedpanelet.",
+  "rdoGroupByField": "etter felt",
+  "rdoGroupByRenderer": "etter opptegner"
 });

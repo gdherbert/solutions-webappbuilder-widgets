@@ -17,7 +17,7 @@ define({
   "symbolOptionsText": "Symbolizacja mapy",
   "iconOptionsText": "Symbolizacja panelu",
   "sympolPopupTitle": "Ustawienia wyświetlania",
-  "rdoLayer": "Domyślny symbol",
+  "rdoLayer": "Symbol domyślny",
   "rdoCustom": "Użyj obrazu",
   "chkCluster": "Włącz klastrowanie",
   "defineClusterSymbol": "Podaj symbol klastra",
@@ -48,5 +48,7 @@ define({
   "hidePanelHelp": "Włącz/Wyłącz wyświetlanie panelu głównego.",
   "continuousRefreshHelp": "Uwaga: Zbiór obiektów będzie odświeżany ciągle.",
   "panelCountOptionHelp": "Włącz/Wyłącz wyświetlanie liczby obiektów.",
-  "panelIconOptionHelp": "Włącz/Wyłącz wyświetlanie logo na panelu głównym."
+  "panelIconOptionHelp": "Włącz/Wyłącz wyświetlanie logo na panelu głównym.",
+  "rdoGroupByField": "według pola",
+  "rdoGroupByRenderer": "według modułu renderowania"
 });

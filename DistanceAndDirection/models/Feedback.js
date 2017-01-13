@@ -145,7 +145,6 @@ define([
         this.map.graphics.add(this.startGraphic);
       },
 
-
       removeStartGraphic: function () {
         if (this.startGraphic) {
           this.map.graphics.remove(this.startGraphic);

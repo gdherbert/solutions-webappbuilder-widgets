@@ -1,5 +1,5 @@
 ///////////////////////////////////////////////////////////////////////////
-// Copyright © 2015 Esri. All Rights Reserved.
+// Copyright © 2016 Esri. All Rights Reserved.
 //
 // Licensed under the Apache License Version 2.0 (the 'License');
 // you may not use this file except in compliance with the License.
@@ -13,6 +13,7 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 ///////////////////////////////////////////////////////////////////////////
+
 define(['dojo/_base/declare',
   'dijit/_WidgetsInTemplateMixin',
   'dijit/form/Select',
@@ -24,6 +25,7 @@ define(['dojo/_base/declare',
   'dojo/_base/html',
   'dojo/dom-style',
   'dojo/dom-class',
+  'dojo/Deferred',
   'dojo/on',
   'dojo/query',
   'jimu/BaseWidget',
@@ -44,6 +46,7 @@ function (declare,
   html,
   domStyle,
   domClass,
+  Deferred,
   on,
   query,
   BaseWidget,
@@ -62,9 +65,15 @@ function (declare,
     callerTab: null,
     callerOpLayers: null,
     layerList: null,
+    test: false,
+    fields: null,
+    hasFields: true,
 
     constructor: function (/*Object*/args) {
       this.map = args.map;
+      if (args.test) {
+        this.test = args.test;
+      }
     },
 
     postMixInProperties: function () {
@@ -79,146 +88,155 @@ function (declare,
 
     startup: function () {
       var fields = null;
-      if (this.callerTab.type === "summary") {
-        fields = [{
-          name: "layer",
-          title: this.nls.fieldTitle,
-          "class": "label",
-          type: "empty",
-          width: "250px"
-        }, {
-          name: "label",
-          title: this.nls.layerLabel,
-          "class": "label",
-          type: "empty",
-          width: "200px"
-        }, {
-          name: "type",
-          title: this.nls.typeTitle,
-          "class": "sumlabel",
-          type: "empty"
-        }, {
-          name: "actions",
-          title: this.nls.actionsTitle,
-          "class": "actions",
-          type: "actions",
-          actions: ["up", "down", "delete"]
-        }];
-      } else if (this.callerTab.type === "groupedSummary") {
-        fields = [{
-          name: "layer",
-          title: this.nls.groupByField,
-          "class": "label",
-          type: "empty",
-          width: "40%"
-        }, {
-          name: "label",
-          title: this.nls.layerLabel,
-          "class": "label",
-          type: "empty",
-          width: "20%"
-        }, {
-          name: "type",
-          title: this.nls.labelType,
-          "class": "label",
-          type: "empty",
-          width: "20%"
-        }];
-      } else {
-        fields = [{
-          name: "layer",
-          title: this.nls.fieldTitle,
-          "class": "label",
-          type: "empty",
-          width: "60%"
-        }, {
-          name: "actions",
-          title: this.nls.actionsTitle,
-          "class": "actions",
-          type: "actions",
-          actions: ["up", "down", "delete"],
-          width: "40%"
-        }];
-      }
+      if (!this.test) {
+        if (this.callerTab.type === "summary") {
+          fields = [{
+            name: "layer",
+            title: this.nls.fieldTitle,
+            "class": "label",
+            type: "empty",
+            width: "250px"
+          }, {
+            name: "label",
+            title: this.nls.layerLabel,
+            "class": "label",
+            type: "empty",
+            width: "200px"
+          }, {
+            name: "type",
+            title: this.nls.typeTitle,
+            "class": "sumlabel",
+            type: "empty"
+          }, {
+            name: "actions",
+            title: this.nls.actionsTitle,
+            "class": "actions",
+            type: "actions",
+            actions: ["up", "down", "delete"]
+          }];
+        } else if (this.callerTab.type === "groupedSummary") {
+          fields = [{
+            name: "layer",
+            title: this.nls.groupByField,
+            "class": "label",
+            type: "empty",
+            width: "40%"
+          }, {
+            name: "label",
+            title: this.nls.layerLabel,
+            "class": "label",
+            type: "empty",
+            width: "20%"
+          }, {
+            name: "type",
+            title: this.nls.labelType,
+            "class": "label",
+            type: "empty",
+            width: "20%"
+          }];
+        } else {
+          fields = [{
+            name: "layer",
+            title: this.nls.fieldTitle,
+            "class": "label",
+            type: "empty",
+            width: "60%"
+          }, {
+            name: "actions",
+            title: this.nls.actionsTitle,
+            "class": "actions",
+            type: "actions",
+            actions: ["up", "down", "delete"],
+            width: "40%"
+          }];
+        }
 
-      var args = {
-        fields: fields
-      };
-      this.displayFieldsTable = new Table(args);
-      this.displayFieldsTable.placeAt(this.fieldTable);
-      html.setStyle(this.displayFieldsTable.domNode, {
-        'height': '100%'
-      });
-      this.displayFieldsTable.startup();
-
-      this.operationsList = [];
-      if (this.callerTab.type === "summary") {
-        this.operationsList.push({
-          value: 'sum',
-          label: this.nls.sum
-        }, {
-          value: 'avg',
-          label: this.nls.avg
-        }, {
-          value: 'min',
-          label: this.nls.min
-        }, {
-          value: 'max',
-          label: this.nls.max
+        var args = {
+          fields: fields
+        };
+        this.displayFieldsTable = new Table(args);
+        this.displayFieldsTable.placeAt(this.fieldTable);
+        html.setStyle(this.displayFieldsTable.domNode, {
+          'height': '100%'
         });
-      } else if (this.callerTab.type === "groupedSummary") {
-        this.operationsList.push({
-          value: 'pre',
-          label: this.nls.prefix
-        }, {
-          value: 'suf',
-          label: this.nls.suffix
-        });
-      }
+        this.displayFieldsTable.startup();
 
-      // TO DO: change column label
-      /*jshint unused: true*/
-      if (this.callerTab.type === "summary") {
-        domStyle.set(this.chk_summary, "display", "block");
-        domStyle.set(this.chk_summaryLabels, "display", "block");
-      } else {
-        domStyle.set(this.chk_summary, "display", "none");
-        domStyle.set(this.chk_summaryLabels, "display", "none");
-      }
+        this.operationsList = [];
+        if (this.callerTab.type === "summary") {
+          this.operationsList.push({
+            value: 'sum',
+            label: this.nls.sum
+          }, {
+            value: 'avg',
+            label: this.nls.avg
+          }, {
+            value: 'min',
+            label: this.nls.min
+          }, {
+            value: 'max',
+            label: this.nls.max
+          });
+        } else if (this.callerTab.type === "groupedSummary") {
+          this.operationsList.push({
+            value: 'pre',
+            label: this.nls.prefix
+          }, {
+            value: 'suf',
+            label: this.nls.suffix
+          });
+        }
 
-      this.btnCancel.innerText = this.nls.common.cancel;
-      this.own(on(this.btnCancel, 'click', lang.hitch(this, function () {
-        this.emit('cancel');
-      })));
+        // TO DO: change column label
+        /*jshint unused: true*/
+        if (this.callerTab.type === "summary") {
+          domStyle.set(this.chk_summary, "display", "block");
+          domStyle.set(this.chk_summaryLabels, "display", "block");
+          domStyle.set(this.chk_countOnly, "display", "none");
+        } else {
+          domStyle.set(this.chk_countOnly, "display", "block");
+          domStyle.set(this.chk_summary, "display", "none");
+          domStyle.set(this.chk_summaryLabels, "display", "none");
+        }
 
-      this.btnOk.innerText = this.nls.common.ok;
-      this.own(on(this.btnOk, 'click', lang.hitch(this, function () {
-        if (!domClass.contains(this.btnOk, 'jimu-state-disabled')) {
-          this.updateSummaryType();
-          var ok = false;
-          for (var key in this.advStat.stats) {
-            if (this.advStat.stats.hasOwnProperty(key)) {
-              ok = true;
+        this.btnCancel.innerText = this.nls.common.cancel;
+        this.own(on(this.btnCancel, 'click', lang.hitch(this, function () {
+          this.emit('cancel');
+        })));
+
+        this.btnOk.innerText = this.nls.common.ok;
+        this.own(on(this.btnOk, 'click', lang.hitch(this, function () {
+          if (!domClass.contains(this.btnOk, 'jimu-state-disabled')) {
+            this.updateSummaryType();
+            var ok = false;
+            for (var key in this.advStat.stats) {
+              if (this.advStat.stats.hasOwnProperty(key)) {
+                ok = true;
+              }
+            }
+            if (!ok) {
+              this.advStat = null;
+            }
+            this.emit('ok', this.advStat);
+          }
+        })));
+
+        this.layerTables = [];
+        this.summaryLayers = [];
+        this.advStat = {};
+        this._getAllValidLayers().then(lang.hitch(this, function () {
+          if (this.callerTab.type === "groupedSummary") {
+            //hide add field
+            domStyle.set(this.btnAddField, "display", "none");
+            if (this.hasFields) {
+              this._addTabRow();
+            }
+          } else {
+            if (this.hasFields) {
+              this.addHandler = this.own(on(this.btnAddField, 'click', lang.hitch(this, this._addTabRow)));
+              this.own(on(this.displayFieldsTable, 'row-delete', lang.hitch(this, this._rowDeleted)));
             }
           }
-          if (!ok) {
-            this.advStat = null;
-          }
-          this.emit('ok', this.advStat);
-        }
-      })));
-
-      this.layerTables = [];
-      this.summaryLayers = [];
-      this.advStat = {};
-      this._getAllValidLayers();
-
-      if (this.callerTab.type === "groupedSummary") {
-        //hide add field
-        domStyle.set(this.btnAddField, "display", "none");
-      } else {
-        this.own(on(this.btnAddField, 'click', lang.hitch(this, this._addTabRow)));
-        this.own(on(this.displayFieldsTable, 'row-delete', lang.hitch(this, this._rowDeleted)));
+        }));
       }
     },
 
@@ -230,12 +248,13 @@ function (declare,
       this.chk_length.set("disabled", (geomType !== "esriGeometryPolyline"));
     },
 
-    _getAllValidLayers: function () {
+    _getAllValidLayers: function (test) {
+      var def = new Deferred();
       array.forEach(this.callerOpLayers, lang.hitch(this, function (OpLyr) {
         if (OpLyr.newSubLayers.length > 0) {
           this._recurseOpLayers(OpLyr.newSubLayers);
         } else {
-          if (OpLyr.title === this.callerLayer) {
+          if (OpLyr.id === this.callerLayer) {
             this.layerList = OpLyr;
           }
         }
@@ -243,11 +262,14 @@ function (declare,
       if (this.layerList.layerObject.empty) {
         var tempFL = new FeatureLayer(this.layerList.layerObject.url);
         on(tempFL, "load", lang.hitch(this, function () {
-          this._completeMapLayers(tempFL);
+          this._completeMapLayers(tempFL, test);
+          def.resolve('sucess');
         }));
       } else {
-        this._completeMapLayers(this.layerList);
+        this._completeMapLayers(this.layerList, test);
+        def.resolve('sucess');
       }
+      return def;
     },
 
     _recurseOpLayers: function (pNode) {
@@ -256,7 +278,7 @@ function (declare,
         if (Node.newSubLayers.length > 0) {
           this._recurseOpLayers(Node.newSubLayers);
         } else {
-          if (Node.title === this.callerLayer) {
+          if (Node.id === this.callerLayer) {
             this.layerList = Node;
           }
         }
@@ -265,68 +287,177 @@ function (declare,
 
     //After the class has returned layers, push only Featurelayers and Layers into the layer list.
     /*jshint loopfunc: true */
-    _completeMapLayers: function (args) {
+    _completeMapLayers: function (args, test) {
       if (args) {
-        var layer = args;
-        var fields;
-        var aStat;
-        var geomType;
-        if (typeof (layer.layerObject) === 'undefined') {
-          // ST: get geom type and object id field
-          geomType = layer.geometryType;
-          this.objectIdField = layer.objectIdField;
-          aStat = {
-            "url": layer.url,
-            "stats": {}
-          };
-          fields = lang.clone(layer.fields);
-        } else {
-          // ST: get geom type and object id field
-          geomType = layer.layerObject.geometryType;
-          this.objectIdField = layer.layerObject.objectIdField;
-          aStat = {
-            "url": layer.layerObject.url,
-            "stats": {}
-          };
-          fields = lang.clone(layer.layerObject.fields);
-        }
-
+        var layer = typeof (args.layerObject) === 'undefined' ? args : args.layerObject;
+        //get geom type and object id field
+        var geomType = layer.geometryType;
+        this.objectIdField = layer.objectIdField;
+        var aStat = {
+          "url": layer.url,
+          "stats": {}
+        };
+        var _fields = lang.clone(layer.fields);
+        var skipFields = this.getSkipFields(layer);
+        var fields = [];
+        array.forEach(_fields, function (f) {
+          if (skipFields.indexOf(f.name) === -1) {
+            fields.push(f);
+          }
+        });
+        this.fields = fields;
+        this.popUpFields = this._getPopupFields(layer);
         this.advStat = aStat;
-        // ST: update geom options
-        this._updateGeomOptions(geomType);
-
-        if (this.advStat.url) {
-          this._setFields(fields);
-          if (typeof (this.callerTab.advStat) !== 'undefined' && this.callerTab.advStat) {
-            var statGroup = this.callerTab.advStat.stats;
-            for (var key in statGroup) {
-              if (key === "count") {
-                this.chk_count.set('value', true);
-                this.featureCountLabel.set('value', statGroup[key][0].label);
-              } else if (key === "area") {
-                this.chk_area.set('value', true);
-                this.featureAreaLabel.set('value', statGroup[key][0].label);
-              } else if (key === "length") {
-                this.chk_length.set('value', true);
-                this.featureLengthLabel.set('value', statGroup[key][0].label);
+        if (typeof (test) === 'undefined') {
+          //update geom options
+          this._updateGeomOptions(geomType);
+          if (this.advStat.url) {
+            if (typeof (this.callerTab.advStat) !== 'undefined' && this.callerTab.advStat) {
+              if (this.callerTab.advStat.stats) {
+                this._setFields(fields);
               } else {
-                array.forEach(statGroup[key], lang.hitch(this, function (exp) {
-                  this._populateTabTableRow(key, exp);
-                }));
+                this._setFields(fields, true);
+              }
+              var statGroup = this.callerTab.advStat.stats;
+              for (var key in statGroup) {
+                if (key === "count") {
+                  this.chk_count.set('value', true);
+                  this.featureCountLabel.set('value', statGroup[key][0].label);
+                } else if (key === "area") {
+                  this.chk_area.set('value', true);
+                  this.featureAreaLabel.set('value', statGroup[key][0].label);
+                } else if (key === "length") {
+                  this.chk_length.set('value', true);
+                  this.featureLengthLabel.set('value', statGroup[key][0].label);
+                } else if (key === "tabCount") {
+                  this.chk_count_only.set('value', statGroup[key]);
+                } else {
+                  array.forEach(statGroup[key], lang.hitch(this, function (exp) {
+                    this._populateTabTableRow(key, exp);
+                  }));
+                }
+              }
+            } else {
+              this._setFields(fields, true);
+            }
+            var a = this.callerTab.advStat;
+            if (!a || (typeof (a) !== 'undefined' && !a.hasOwnProperty('stats'))) {
+              var hasPopupFields = this.popUpFields.length > 0;
+              var fll = this.fieldsList.length;
+              if (this.callerTab.type === 'groupedSummary') {
+                fll = 1;
+                if (!hasPopupFields) {
+                  this._setFields(fields);
+                }
+              }
+              if (fll > 0) {
+                var maxCount = this.callerTab.type === 'summary' ? 21 : 4;
+                var x = 0;
+                field_loop:
+                  for (var i = 0; i < fll; i++) {
+                    var add = false;
+                    var f = this.fieldsList[i];
+                    if (hasPopupFields) {
+                      var popupField = this.popUpFields[i];
+                      popup_field_loop:
+                        for (var ii = 0; ii < this.fieldsList.length; ii++) {
+                          f = this.fieldsList[ii];
+                          if (f.value === popupField) {
+                            add = true;
+                            break popup_field_loop;
+                          }
+                        }
+                    }
+                    if (add) {
+                      x += 1;
+                      if (x < maxCount) {
+                        this._addTabRow(f);
+                      } else {
+                        break field_loop;
+                      }
+                    }
+                  }
+              } else {
+                domClass.add(this.btnAddField, 'btn-add-disabled');
+                this.hasFields = false;
               }
             }
           }
-          var a = this.callerTab.advStat;
-          if (!a || (typeof(a) !== 'undefined' && !a.hasOwnProperty('stats'))) {
-            if (this.fieldsList.length > 0) {
-              this._addTabRow();
-            } else {
-              domStyle.set(this.displayFieldsTable.domNode, 'display', "none");
-              domStyle.set(this.btnAddField, "display", "none");
+          if ((this.callerTab.type === 'groupedSummary' && this.popUpFields.length > 0) ||
+            this.callerTab.type !== 'groupedSummary') {
+            this._setFields(fields);
+          }
+        }
+      }
+    },
+
+    _validatePopupFields: function () {
+      var def = new Deferred();
+      this._getAllValidLayers(true).then(lang.hitch(this, function () {
+        var temp_fields = [];
+        for (var i = 0; i < this.popUpFields.length; i++) {
+          var pf = this.popUpFields[i];
+          field_loop:
+            for (var ii = 0; ii < this.fields.length; ii++) {
+              var f = this.fields[ii];
+              if (pf === f.name) {
+                temp_fields.push(f);
+                break field_loop;
+              }
+            }
+        }
+
+        //force summary type checks
+        this.callerTab.type = 'summary';
+        this._setFields(temp_fields);
+        var validPopupFields = this.fieldsList.length > 0;
+        this._setFields(this.fields);
+        var validFields = this.fieldsList.length > 0;
+        def.resolve({
+          layer: this.callerLayer,
+          hasPopupFields: temp_fields.length > 0,
+          hasFields: this.fields.length > 0,
+          hasSummaryPopupFields: validPopupFields,
+          hasSummaryFields: validFields,
+          popUpFields: temp_fields,
+          validSummaryFields: this.fieldsList,
+          advStat: this.advStat
+        });
+      }));
+      return def;
+    },
+
+    _getPopupFields: function (layer) {
+      var skipFields = this.getSkipFields(layer);
+      var fldInfos;
+      var fields = [];
+      this.objectIdField = layer.objectIdField;
+      if (layer.infoTemplate) {
+        fldInfos = layer.infoTemplate.info.fieldInfos;
+      } else if (layer.url && layer.url.indexOf("MapServer") > -1) {
+        var lID = layer.url.split("MapServer/")[1];
+        var mapLayers = this.map.itemInfo.itemData.operationalLayers;
+        fldInfos = null;
+        for (var ii = 0; ii < mapLayers.length; ii++) {
+          var lyr = mapLayers[ii];
+          if (lyr.layerObject && lyr.layerObject.infoTemplates) {
+            var infoTemplate = lyr.layerObject.infoTemplates[lID];
+            if (infoTemplate) {
+              fldInfos = infoTemplate.infoTemplate.info.fieldInfos;
+              break;
             }
           }
         }
       }
+      if (fldInfos) {
+        for (var j = 0; j < fldInfos.length; j++) {
+          var _fi = fldInfos[j];
+          if (_fi && _fi.visible && skipFields.indexOf(_fi.fieldName) === -1) {
+            fields.push(_fi.fieldName);
+          }
+        }
+      }
+      return fields;
     },
 
     checkStringWidth: function (v) {
@@ -361,7 +492,7 @@ function (declare,
       return fitsWidth;
     },
 
-    _setFields: function (pFields) {
+    _setFields: function (pFields, checkPopup) {
       var validFieldTypes = [
       'esriFieldTypeInteger',
       'esriFieldTypeSmallInteger',
@@ -372,16 +503,46 @@ function (declare,
         validFieldTypes.push('esriFieldTypeDate');
       }
       var options = [];
+      var popupFieldsForType = [];
       array.forEach(pFields, lang.hitch(this, function (field) {
         if (validFieldTypes.indexOf(field.type) > -1) {
+          if (checkPopup) {
+            if (this.popUpFields && this.popUpFields.indexOf(field.name) > -1) {
+              popupFieldsForType.push(field.name);
+            }
+          }
           options.push({
             'label': field.alias,
             'value': field.name
           });
+
+          //if (checkPopup) {
+          //  if (this.popUpFields && this.popUpFields.indexOf(field.name) > -1) {
+          //    options.push({
+          //      'label': field.alias,
+          //      'value': field.name
+          //    });
+          //    popupFieldsForType.push(field.name);
+          //  }
+          //} else {
+          //  options.push({
+          //    'label': field.alias,
+          //    'value': field.name
+          //  });
+          //}
         }
       }));
       if (options.length < 1) {
-        domStyle.set(this.btnAddField, "display", "none");
+        domClass.add(this.btnAddField, 'btn-add-disabled');
+        this.hasFields = false;
+      } else {
+        if ((!this.test)) {
+          domStyle.set(this.displayFieldsTable.domNode, 'display', "block");
+          domStyle.set(this.btnAddField, "display", "inline-block");
+        }
+      }
+      if (popupFieldsForType.length !== this.popUpFields.length) {
+        this.popUpFields = popupFieldsForType;
       }
       this.fieldsList = lang.clone(options);
     },
@@ -401,11 +562,15 @@ function (declare,
       }
     },
 
-    _addTabRow: function () {
-      if (this.callerTab.type !== "summary" && this.displayFieldsTable.getRows().length >= 3) {
+    _addTabRow: function (field) {
+      var numRows = this.displayFieldsTable.getRows().length;
+      if (this.callerTab.type !== "summary" && numRows >= 3) {
         new Message({
           message: this.nls.max_records
         });
+        return;
+      }
+      if (this.callerTab.type === "groupedSummary" && numRows > 0) {
         return;
       }
       var result = this.displayFieldsTable.addRow({});
@@ -414,6 +579,9 @@ function (declare,
         this._addTabFields(tr);
         this._addTabTypes(tr);
         this._addTabLabel(tr);
+        if (field) {
+          tr.selectFields.set("value", field.value);
+        }
       }
     },
 
@@ -429,7 +597,7 @@ function (declare,
         }
         var tabLayers = new Select({
           style: {
-            height: "26px",
+            height: "24px",
             width: "100%"
           },
           "class": className,
@@ -449,7 +617,7 @@ function (declare,
       var labelTextBox = new ValidationTextBox({
         style: {
           width: "100%",
-          height: "26px"
+          height: "24px"
         },
         "class": "validationBox"
       });
@@ -471,7 +639,7 @@ function (declare,
         var tabTypes = new Select({
           style: {
             width: "100%",
-            height: "26px"
+            height: "24px"
           },
           options: typeOptions
         });
@@ -479,6 +647,33 @@ function (declare,
         tabTypes.startup();
         tr.selectTypes = tabTypes;
       }
+    },
+
+    getSkipFields: function (layer) {
+      //var skipFields = ['SUBTYPE', 'SUBTYPEFIELD'];
+      var skipFields = [];
+      //if (layer.typeIdField && layer.typeIdField !== '') {
+      //  skipFields.push(layer.typeIdField);
+      //}
+
+      if (layer.fields) {
+        for (var i = 0; i < layer.fields.length; i++) {
+          var f = layer.fields[i];
+          if (f && f.type && f.name) {
+            if (f.type === 'esriFieldTypeGeometry') {
+              skipFields.push(f.name);
+            }
+          }
+        }
+      }
+
+      if (layer.globalIdField && layer.globalIdField !== '') {
+        skipFields.push(layer.globalIdField);
+      }
+      if (layer.objectIdField && layer.objectIdField !== '') {
+        skipFields.push(layer.objectIdField);
+      }
+      return skipFields;
     },
 
     updateSummaryType: function () {
@@ -495,8 +690,14 @@ function (declare,
         if (flds.length > 0) {
           this.advStat.stats.outFields = flds;
         }
+        this.advStat.stats.tabCount = this.chk_count_only.checked;
       } else {
         // count
+        if (this.callerTab.type === "groupedSummary") {
+          this.advStat.stats.tabCount = this.chk_count_only.checked;
+        } else {
+          this.advStat.stats.tabCount = this.chk_count.checked;
+        }
         if (this.chk_count.checked) {
           //this.summaryLayers[0].stats.count = [
           this.advStat.stats.count = [
@@ -559,7 +760,9 @@ function (declare,
     },
 
     chkCountChanged: function (v) {
-      this.updateLabel(this.featureCountLabel, v);
+      if (this.callerTab.type === "summary") {
+        this.updateLabel(this.featureCountLabel, v);
+      }
     },
 
     chkAreaChanged: function (v) {

@@ -51,10 +51,21 @@ define([
          *
          **/
         constructor: function () {
+            this.syncEvents();
             this.inherited(arguments);
             this._utils = new Utils();
             this.circlePoints = [];
-            //this._onDoubleClickHandler_connect = dojoConnect.connect(this.map, 'onDblClick', dojoLang.hitch(this, this._onDoubleClickHandler));
+            
+        },
+        
+        /*
+
+        */
+        syncEvents: function () {
+            dojoTopic.subscribe(
+                'manual-rangering-center-point-input',
+                dojoLang.hitch(this, this.onCenterPointManualInputHandler)
+            );
         },
 
         /**
@@ -62,6 +73,16 @@ define([
          **/
         clearGraphics: function (evt) {
             this.map.graphics.clear();
+        },
+        
+        /*
+        Handler for the manual input of a center point
+        */
+        onCenterPointManualInputHandler: function (centerPoint) {
+            this._points = [];
+            this._points.push(centerPoint.offset(0, 0));
+            this.set('startPoint', this._points[0]);
+            this.map.centerAt(centerPoint);
         },
 
         /**
@@ -151,7 +172,8 @@ define([
 
             var circleGeometry = new EsriCircle(start, {
                 radius: length,
-                geodesic: true
+                geodesic: true,
+                numberOfPoints: 360
             });
 
             if (this.circleGraphic) {
@@ -169,9 +191,7 @@ define([
          *
          **/
         _onDoubleClickHandler: function (evt) {
-            dojoConnect.disconnect(this._onMouseMoveHandler_connect);
-            dojoConnect.disconnect(this._onDoubleClickHandler_connect);
-            this._onDoubleClickHandler_connect = null;
+            this.disconnectOnMouseMoveHandlers();            
             var points = dojoLang.clone(this.circlePoints);
             this.cleanup();
             this._clear();
@@ -180,6 +200,15 @@ define([
                 circlePoints: points
             });
             this._drawEnd(geom);
+        },
+        
+        /*
+         *
+         */
+        disconnectOnMouseMoveHandlers: function (evt) {
+            dojoConnect.disconnect(this._onMouseMoveHandler_connect);
+            dojoConnect.disconnect(this._onDoubleClickHandler_connect);
+            this._onDoubleClickHandler_connect = null;
         },
 
         /*

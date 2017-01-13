@@ -17,11 +17,11 @@ define({
   "symbolOptionsText": "Kaartsymbologie",
   "iconOptionsText": "Paneelsymbologie",
   "sympolPopupTitle": "Instellingen weergeven",
-  "rdoLayer": "Standaard symbool",
+  "rdoLayer": "Standaardsymbool",
   "rdoCustom": "Een afbeelding gebruiken",
   "chkCluster": "Clustering inschakelen",
   "defineClusterSymbol": "Clustersymbool specificeren",
-  "rdoEsri": "Kies een symbool",
+  "rdoEsri": "Een symbool kiezen",
   "rdoLayerIcon": "Kaartsymbool gebruiken",
   "rdoCustomIcon": "Een afbeelding gebruiken",
   "editCustomSymbol": "Aangepast symbool bewerken",
@@ -48,5 +48,7 @@ define({
   "hidePanelHelp": "Hoofdvensterweergave inschakelen/uitschakelen.",
   "continuousRefreshHelp": "Opmerking: Vernieuwen van objectverzameling zal permanent gebeuren.",
   "panelCountOptionHelp": "Weergave van objecttelling inschakelen/uitschakelen.",
-  "panelIconOptionHelp": "Weergave van een logo op het hoofdvenster inschakelen/uitschakelen."
+  "panelIconOptionHelp": "Weergave van een logo op het hoofdvenster inschakelen/uitschakelen.",
+  "rdoGroupByField": "op veld",
+  "rdoGroupByRenderer": "op renderer"
 });

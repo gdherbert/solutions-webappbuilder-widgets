@@ -23,7 +23,7 @@ define({
   "defineClusterSymbol": "Specificaţi simbolul grupării",
   "rdoEsri": "Alegeţi un simbol",
   "rdoLayerIcon": "Utilizaţi simbolul hărţii",
-  "rdoCustomIcon": "Utilizați o imagine",
+  "rdoCustomIcon": "Utilizaţi o imagine",
   "editCustomSymbol": "Editare simbol particularizat",
   "editCustomIcon": "Editare pictogramă particularizată",
   "missingRefreshValue": "Vă rugăm să furnizaţi o valoare a intervalului de reîmprospătare.",
@@ -48,5 +48,7 @@ define({
   "hidePanelHelp": "Activaţi/dezactivaţi afişarea panoului principal.",
   "continuousRefreshHelp": "Notă: Reîmprospătarea colecţiei de obiecte spaţiale va avea loc încontinuu.",
   "panelCountOptionHelp": "Activaţi/dezactivaţi afişarea numerelor de obiecte spaţiale.",
-  "panelIconOptionHelp": "Activaţi/dezactivaţi afişarea unei sigle pe panoul principal."
+  "panelIconOptionHelp": "Activaţi/dezactivaţi afişarea unei sigle pe panoul principal.",
+  "rdoGroupByField": "după câmp",
+  "rdoGroupByRenderer": "după modul de redare"
 });

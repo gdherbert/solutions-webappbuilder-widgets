@@ -1,20 +1,39 @@
-﻿define([
+﻿///////////////////////////////////////////////////////////////////////////
+// Copyright © 2016 Esri. All Rights Reserved.
+//
+// Licensed under the Apache License Version 2.0 (the "License");
+// you may not use this file except in compliance with the License.
+// You may obtain a copy of the License at
+//
+//    http://www.apache.org/licenses/LICENSE-2.0
+//
+// Unless required by applicable law or agreed to in writing, software
+// distributed under the License is distributed on an "AS IS" BASIS,
+// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+// See the License for the specific language governing permissions and
+// limitations under the License.
+///////////////////////////////////////////////////////////////////////////
+
+define([
   'dojo/_base/declare',
   'dojo/Evented',
   'dojo/_base/array',
+  'dojo/DeferredList',
+  'dojo/Deferred',
   'dojo/_base/lang',
   'dojo/_base/Color',
   'dojo/dom',
   'dojo/dom-class',
   'dojo/dom-construct',
+  'dojo/dom-geometry',
   'dojo/dom-style',
   'dojo/number',
   'dojo/on',
   'dojo/has',
   'dijit/form/Button',
   'jimu/dijit/Popup',
-  'jimu/CSVUtils',
   'jimu/utils',
+  'jimu/dijit/Message',
   'esri/config',
   'esri/geometry/geometryEngine',
   'esri/geometry/mathUtils',
@@ -26,24 +45,28 @@
   'esri/symbols/SimpleLineSymbol',
   'esri/symbols/Font',
   'esri/symbols/TextSymbol',
-  'esri/tasks/query'
+  'esri/tasks/query',
+  './analysisUtils'
 ], function (
   declare,
   Evented,
   array,
+  DeferredList,
+  Deferred,
   lang,
   Color,
   dom,
   domClass,
   domConstruct,
+  domGeom,
   domStyle,
   number,
   on,
   has,
   Button,
   Popup,
-  CSVUtils,
   utils,
+  Message,
   esriConfig,
   geometryEngine,
   mathUtils,
@@ -55,7 +78,8 @@
   SimpleLineSymbol,
   Font,
   TextSymbol,
-  Query
+  Query,
+  analysisUtils
 ) {
 
   var summaryInfo = declare('GroupedCountInfo', [Evented], {
@@ -64,17 +88,23 @@
     summaryFields: [],
     summaryIds: [],
     summaryFeatures: [],
-    summaryGeom: null,
     tabNum: null,
 
     popupFields: [],
 
     groupedResults: {},
+    specialFields: null,
+    dateFields: {},
 
     symbolField: null,
     graphicsLayer: null,
     lyrRenderer: null,
     lyrSymbol: null,
+    featureCount: 0,
+    incidentCount: 0,
+    displayCount: false,
+    allFields: false,
+
     constructor: function (tab, container, parent) {
       this.tab = tab;
       this.container = container;
@@ -83,28 +113,168 @@
       this.graphicsLayer = null;
       this.specialFields = {};
       this.dateFields = {};
+      this.baseLabel = tab.label !== "" ? tab.label : tab.layerTitle ? tab.layerTitle : tab.layers;
+    },
+
+    queryTabCount: function (incidents, buffers, updateNode, displayCount) {
+      this.displayCount = displayCount;
+      this.incidentCount = incidents.length;
+      var tabLayers = [this.tab.tabLayers[0]];
+      if (this.mapServiceLayer && this.tab.tabLayers.length > 1) {
+        tabLayers = [this.tab.tabLayers[1]];
+      }
+      if (this.tab.tabLayers.length > 0) {
+        if (this.tab.tabLayers[0].url) {
+          if (this.tab.tabLayers[0].url.indexOf("MapServer") > -1) {
+            this.mapServiceLayer = true;
+            var tempFL;
+            if (typeof (this.tab.tabLayers[0].infoTemplate) !== 'undefined') {
+              this.summaryLayer = this.tab.tabLayers[0];
+              this.summaryFields = this._getFields(this.summaryLayer);
+              tempFL = new FeatureLayer(this.summaryLayer.url);
+              tempFL.infoTemplate = this.tab.tabLayers[0].infoTemplate;
+              tabLayers = [tempFL];
+              this.tab.tabLayers = tabLayers;
+              this._performQuery(incidents, buffers, updateNode, displayCount, tabLayers);
+            } else {
+              if (!this.loading) {
+                tempFL = new FeatureLayer(this.tab.tabLayers[0].url);
+                this.loading = true;
+                on(tempFL, "load", lang.hitch(this, function () {
+                  this.summaryLayer = tempFL;
+                  this.summaryFields = this._getFields(this.summaryLayer);
+                  var lID = this.tab.tabLayers[0].url.split("MapServer/")[1];
+                  var mapLayers = this.parent.map.itemInfo.itemData.operationalLayers;
+                  for (var i = 0; i < mapLayers.length; i++) {
+                    var lyr = mapLayers[i];
+                    if (typeof (lyr.layerObject) !== 'undefined') {
+                      if (lyr.layerObject.infoTemplates) {
+                        var infoTemplate = lyr.layerObject.infoTemplates[lID];
+                        if (infoTemplate) {
+                          tempFL.infoTemplate = infoTemplate.infoTemplate;
+                          break;
+                        }
+                      }
+                    }
+                  }
+                  tabLayers = [tempFL];
+                  this.tab.tabLayers = tabLayers;
+                  this.loading = false;
+                  this._performQuery(incidents, buffers, updateNode, displayCount, tabLayers);
+                }));
+              }
+            }
+          }
+        }
+      }
+      if (!this.mapServiceLayer) {
+        this._performQuery(incidents, buffers, updateNode, displayCount, tabLayers);
+      }
+    },
+
+    _performQuery: function (incidents, buffers, updateNode, displayCount, tabLayers) {
+      var defArray = [];
+      var geom;
+      var prevArray;
+      var da;
+      var geoms;
+      if (buffers.length > 0) {
+        geoms = analysisUtils.getGeoms(buffers);
+      } else if (incidents.length > 0) {
+        geoms = analysisUtils.getGeoms(incidents);
+      }
+      this.summaryGeoms = geoms;
+      if (geoms.length > 0) {
+        for (var ii = 0; ii < geoms.length; ii++) {
+          geom = geoms[ii];
+          da = analysisUtils.createDefArray(tabLayers, geom);
+          if (ii === 0) {
+            defArray = da;
+            prevArray = da;
+          } else {
+            defArray = prevArray.concat(da);
+            prevArray = defArray;
+          }
+        }
+      }
+      var defList = new DeferredList(defArray);
+      defList.then(lang.hitch(this, function (defResults) {
+        var length = 0;
+        for (var r = 0; r < defResults.length; r++) {
+          var featureSet = defResults[r][1];
+          if (!isNaN(featureSet)) {
+            length += featureSet;
+          } else if (featureSet && featureSet.features) {
+            length += featureSet.features.length;
+          } else if (featureSet && typeof (featureSet.length) !== 'undefined') {
+            length += featureSet.length;
+          }
+        }
+        this.updateTabCount(length, updateNode, displayCount);
+        if (this.queryOnLoad) {
+          lang.hitch(this, this._queryFeatures(this.summaryGeoms));
+        }
+      }));
+    },
+
+    updateTabCount: function (count, updateNode, displayCount) {
+      this.displayCount = displayCount;
+      this.featureCount = count;
+      analysisUtils.updateTabCount(this.featureCount, updateNode, displayCount, this.baseLabel, this.incidentCount);
     },
 
     /* jshint unused: true */
     // update for incident
-    updateForIncident: function (incident, buffer, graphicsLayer, num) {
+    updateForIncident: function (incidents, buffers, graphicsLayer, num, snapShot, createSnapShot, downloadAll) {
+      this.incidentCount = incidents.length;
+      if (typeof (createSnapShot) !== 'undefined' && typeof (downloadAll) !== 'undefined') {
+        if (!createSnapShot) {
+          this.allFields = downloadAll;
+        } else {
+          this.allFields = true;
+        }
+      } else {
+        this.allFields = false;
+      }
+      var isSnapShot = typeof (snapShot) !== 'undefined';
+      var def;
       this.tabNum = num;
-      this.container.innerHTML = "";
-      domClass.add(this.container, "loading");
+      if (!isSnapShot) {
+        this.container.innerHTML = "";
+        domClass.add(this.container, "loading");
+      } else {
+        def = new Deferred();
+      }
       this.summaryIds = [];
       this.summaryFeatures = [];
       this.groupedResults = {};
-      this.summaryGeom = buffer.geometry;
       if (this.tab.tabLayers.length > 0) {
+        var geoms = [];
+        if (buffers.length > 0) {
+          geoms = buffers;
+        } else {
+          for (var i = 0; i < incidents.length; i++) {
+            var geom = incidents[i].geometry ? incidents[i].geometry : incidents[i];
+            if (geom.type === 'polygon') {
+              geoms.push(geom);
+            }
+          }
+        }
         var tempFL;
         if (typeof (this.tab.tabLayers[0].infoTemplate) !== 'undefined') {
           this.summaryLayer = this.tab.tabLayers[0];
           tempFL = new FeatureLayer(this.summaryLayer.url);
           tempFL.infoTemplate = this.tab.tabLayers[0].infoTemplate;
           this.tab.tabLayers[1] = tempFL;
-          this._initGraphicsLayer(graphicsLayer);
           this.summaryFields = this._getFields(this.tab.tabLayers[0]);
-          lang.hitch(this, this._queryFeatures(buffer.geometry));
+          if (isSnapShot) {
+            this._queryFeatures(geoms, isSnapShot).then(function (results) {
+              def.resolve(results);
+            });
+          } else {
+            this._initGraphicsLayer(graphicsLayer);
+            lang.hitch(this, this._queryFeatures(geoms, isSnapShot));
+          }
         } else {
           tempFL = new FeatureLayer(this.tab.tabLayers[0].url);
           on(tempFL, "load", lang.hitch(this, function () {
@@ -126,10 +296,19 @@
               }
             }
             this.tab.tabLayers[1] = tempFL;
-            this._initGraphicsLayer(graphicsLayer);
             this.summaryFields = this._getFields(this.tab.tabLayers[1]);
-            lang.hitch(this, this._queryFeatures(buffer.geometry));
+            if (isSnapShot) {
+              this._queryFeatures(geoms, isSnapShot).then(function (results) {
+                def.resolve(results);
+              });
+            } else {
+              this._initGraphicsLayer(graphicsLayer);
+              lang.hitch(this, this._queryFeatures(geoms));
+            }
           }));
+        }
+        if (isSnapShot) {
+          return def;
         }
       }
     },
@@ -148,30 +327,95 @@
               this.lyrSymbol = this.lyrRenderer.symbol;
             }
           }
+          //TODO I don't think is necessary since we handle in getFields Now
+          if (this.specialFields === null) {
+            analysisUtils.getSpecialFields(this.summaryLayer);
+          }
         }
       }
     },
 
     // query features
-    _queryFeatures: function (geom) {
+    _queryFeatures: function (geoms, snapShot) {
+      var def;
+      if (snapShot) {
+        def = new Deferred();
+      }
+      var defArray = [];
       var query = new Query();
-      query.geometry = geom;
-      this.summaryLayer.queryIds(query, lang.hitch(this, function (objectIds) {
+      for (var i = 0; i < geoms.length; i++) {
+        var geom = geoms[i];
+        query.geometry = geom;
+        defArray.push(this.summaryLayer.queryIds(query));
+      }
+
+      var defList = new DeferredList(defArray);
+      defList.then(lang.hitch(this, function (defResults) {
+        var objectIds;
+        var prevObjectIds;
+        for (var r = 0; r < defResults.length; r++) {
+          if (defResults[r][0]) {
+            var oids = defResults[r][1];
+            if (r === 0) {
+              objectIds = oids;
+            } else {
+              objectIds = prevObjectIds.concat(oids);
+            }
+            prevObjectIds = objectIds;
+          }
+        }
         if (objectIds) {
           this.summaryIds = objectIds;
           if (this.summaryIds.length > 0) {
-            this._queryFeaturesByIds();
+            if (snapShot) {
+              this._queryFeaturesByIds(snapShot).then(function (results) {
+                def.resolve(results);
+              });
+            } else {
+              this._queryFeaturesByIds();
+            }
+          } else {
+            if (snapShot) {
+              //TODO make sure this is necessary
+              //this._processResults().then(function (results) {
+              //  def.resolve(results);
+              //});
+            } else {
+              this._processResults();
+            }
+          }
+        } else {
+          //TODO this block does not seem like it would be called anymore
+          // now that we don't allow you to click a tab with no features
+          if (snapShot) {
+            //TODO make sure this is necessary
+            //this._processResults().then(function (results) {
+            //  def.resolve(results);
+            //});
           } else {
             this._processResults();
           }
-        } else {
-          this._processResults();
         }
+      }), lang.hitch(this, function (err) {
+        console.error(err);
+        //if (snapShot) {
+        //  def.reject(err);
+        //}
+        new Message({
+          message: err
+        });
       }));
+      if (snapShot) {
+        return def;
+      }
     },
 
-    // query features by ids
-    _queryFeaturesByIds: function () {
+    _queryFeaturesByIds: function (snapShot) {
+      var def;
+      var defArray = [];
+      if (snapShot) {
+        def = new Deferred();
+      }
       var max = this.summaryLayer.maxRecordCount || 1000;
       var ids = this.summaryIds.slice(0, max);
       this.summaryIds.splice(0, max);
@@ -183,6 +427,10 @@
           return true;
         }
       }));
+      //TODO should be avoided for CSV
+      if (snapShot) {
+        includeGeom = true;
+      }
       query.returnGeometry = includeGeom;
       var outFields = [];
       array.forEach(this.summaryFields, function (f) {
@@ -207,22 +455,53 @@
       }
 
       query.objectIds = ids;
-      this.summaryLayer.queryFeatures(query, lang.hitch(this, function (featureSet) {
-        if (featureSet.features) {
-          this.summaryFeatures = this.summaryFeatures.concat(featureSet.features);
-        }
-        this._processResults();
-        if (this.summaryIds.length > 0) {
-          if (this.SA_SAT_download) {
-            domClass.replace(this.SA_SAT_download, "processing", "download");
+      defArray.push(this.summaryLayer.queryFeatures(query));
+      while (this.summaryIds.length > 0) {
+        ids = this.summaryIds.slice(0, max);
+        this.summaryIds.splice(0, max);
+        query.objectIds = ids;
+        defArray.push(this.summaryLayer.queryFeatures(query));
+      }
+
+      var defList = new DeferredList(defArray);
+      defList.then(lang.hitch(this, function (defResults) {
+        for (var r = 0; r < defResults.length; r++) {
+          if (defResults[r][0]) {
+            var featureSet = defResults[r][1];
+            if (featureSet.features) {
+              this.summaryFeatures = this.summaryFeatures.concat(featureSet.features);
+            }
           }
-          this._queryFeaturesByIds();
+        }
+        if (snapShot) {
+          this._processResults(snapShot).then(lang.hitch(this, function (results) {
+            if (this.SA_SAT_download) {
+              domClass.replace(this.SA_SAT_download, "download", "processing");
+            }
+            def.resolve(results);
+          }));
         } else {
+          this._processResults();
           if (this.SA_SAT_download) {
             domClass.replace(this.SA_SAT_download, "download", "processing");
           }
         }
+
+        if (this.SA_SAT_download) {
+          domClass.replace(this.SA_SAT_download, "download", "processing");
+        }
+      }), lang.hitch(this, function (err) {
+        console.error(err);
+        //if (snapShot) {
+        //def.reject(err);
+        //}
+        new Message({
+          message: err
+        });
       }));
+      if (snapShot) {
+        return def;
+      }
     },
 
     _prepGroupedResults: function () {
@@ -230,14 +509,14 @@
         var feat = this.summaryFeatures[i];
         if (typeof (this.summaryFields) !== 'undefined' && this.summaryFields.length > 0) {
           var v = feat.attributes[this.summaryFields[0].field];
-          var fVal = this._getFieldValue(this.summaryFields[0].field, v);
+          var fVal = analysisUtils.getFieldValue(this.summaryFields[0].field, v,
+            this.specialFields, this.dateFields, 'longMonthDayYear');
           var val;
           if (typeof (fVal) !== 'undefined' && fVal !== null) {
             val = utils.stripHTML(fVal.toString());
           } else {
             val = "";
           }
-
           if (!(val in this.groupedResults)) {
             this.groupedResults[val] = { features: [feat] };
           } else {
@@ -261,35 +540,52 @@
 
     // process results
     //Solutions: added a string search looking for area or length to not round up.
-    _processResults: function () {
+    _processResults: function (snapShot) {
       this._prepGroupedResults();
       this._prepResults();
-      this.container.innerHTML = "";
-      domClass.remove(this.container, "loading");
       var results = this.groupedResults;
-      if (Object.keys(this.groupedResults).length === 0) {
-        this.container.innerHTML = this.parent.nls.noFeaturesFound;
-        return;
-      }
-      var numberOfDivs = Object.keys(this.groupedResults).length + 1;
       var total = 0;
-      var tpc = domConstruct.create("div", {
-        style: "width:" + (numberOfDivs * 220) + "px;"
-      }, this.container);
-      domClass.add(tpc, "SAT_tabPanelContent");
+      var tpc;
+      var def;
+      if (snapShot) {
+        def = new Deferred();
+      } else {
+        this.container.innerHTML = "";
+        domClass.remove(this.container, "loading");
+        if (Object.keys(this.groupedResults).length === 0) {
+          this.container.innerHTML = this.parent.nls.noFeaturesFound;
+          return;
+        }
+        var numberOfDivs = Object.keys(this.groupedResults).length + 1;
+        tpc = domConstruct.create("div", {
+          style: "width:" + (numberOfDivs * 220) + "px;"
+        }, this.container);
+        domClass.add(tpc, "SAT_tabPanelContent");
 
-      var div_results_extra = domConstruct.create("div", {}, tpc);
-      domClass.add(div_results_extra, "SATcol");
+        var div_results_extra = domConstruct.create("div", {}, tpc);
+        domClass.add(div_results_extra, "SATcolExport");
+        domClass.add(div_results_extra, this.parent.lightTheme ? 'lightThemeBorder' : 'darkThemeBorder');
 
-      var div_exp = domConstruct.create("div", {
-        'data-dojo-attach-point': 'SA_SAT_download',
-        innerHTML: this.parent.nls.downloadCSV
-      }, div_results_extra);
-      domClass.add(div_exp, ['btnExport', 'download']);
-      on(div_exp, "click", lang.hitch(this, this._exportToCSV));
+        var div_exp = domConstruct.create("div", {
+          'data-dojo-attach-point': 'SA_SAT_download',
+          title: this.parent.nls.downloadCSV
+        }, div_results_extra);
+        var exportClass = this.parent.isBlackTheme ? 'btnExportBlack' : 'btnExport';
+        domClass.add(div_exp, [exportClass, 'download']);
+        on(div_exp, "click", lang.hitch(this, this._exportToCSV, results));
+      }
 
       var i = 0;
       var sortedResults = Object.keys(results).sort();
+      var snapShotResults = [];
+      if (this.displayCount) {
+        snapShotResults.push({
+          total: this.featureCount,
+          a: undefined,
+          info: this.parent.nls.count,
+          c: undefined
+        });
+      }
       for (var k in sortedResults) {
         var v = sortedResults[k];
         var f = results[v];
@@ -302,46 +598,70 @@
         if (isNaN(total)) {
           total = 0;
         }
-        var div = domConstruct.create("div", { 'class': 'SATcol' }, tpc);
-        var topDiv = domConstruct.create("div", {
-          style: 'max-height: 45px;'
-        }, div);
-        domConstruct.create("div", {
-          'class': 'SATcolWrap',
-          style: 'max-height: 30px; overflow: hidden;',
-          innerHTML: f.type === 'pre' ? f.label.trim() : info
-        }, topDiv);
-        domConstruct.create("div", {
-          'class': 'SATcolWrap',
-          style: 'max-height: 30px; overflow: hidden;',
-          innerHTML: f.type === 'pre' ? info : f.label.trim()
-        }, topDiv);
-        domConstruct.create("div", {
-          'class': f.label !== "" ? 'colGroupedSummary' : 'colSummary',
-          innerHTML: number.format(total)
-        }, div);
+        var num = number.format(total);
+        var a = f.type === 'pre' ? f.label.trim() : info;
+        var b = f.type === 'pre' ? info : f.label.trim();
+        var c = f.label !== "" ? 'colGroupedSummary' : 'colSummary';
+        if (!snapShot) {
+          //TODO see what else we need to keep track of in terms of the label
+          var div = domConstruct.create("div", { 'class': 'SATcol' }, tpc);
+          domClass.add(div, this.parent.lightTheme ? 'lightThemeBorder' : 'darkThemeBorder');
+          var topDiv = domConstruct.create("div", {
+            style: 'max-height: 45px;'
+          }, div);
+          domConstruct.create("div", {
+            'class': 'SATcolWrap',
+            style: 'max-height: 30px; overflow: hidden;',
+            innerHTML: a
+          }, topDiv);
+          domConstruct.create("div", {
+            'class': 'SATcolWrap',
+            style: 'max-height: 30px; overflow: hidden;',
+            innerHTML: b
+          }, topDiv);
+          domConstruct.create("div", {
+            'class': c,
+            innerHTML: num
+          }, div);
+        } else {
+          snapShotResults.push({
+            total: num,
+            a: a,
+            info: b === "" ? a : b,
+            c: c
+          });
+        }
         i += 1;
       }
-
-      if (this.graphicsLayer !== null) {
+      var snapShotGraphics = [];
+      var gl = this.graphicsLayer !== null;
+      if (!snapShot && gl) {
         this.graphicsLayer.clear();
         this.tab.tabLayers[1].clear();
-        if (this.summaryFeatures) {
-          for (var ii = 0; ii < this.summaryFeatures.length; ii++) {
-            var gra = this.summaryFeatures[ii];
-            if (this.lyrSymbol) {
-              gra.symbol = this.lyrSymbol;
+      }
+      if (this.summaryFeatures) {
+        for (var ii = 0; ii < this.summaryFeatures.length; ii++) {
+          var gra = this.summaryFeatures[ii];
+          if (this.lyrSymbol) {
+            gra.symbol = this.lyrSymbol;
+          }
+          else if(this.graphicsLayer) {
+            if (this.graphicsLayer.renderer) {
+              var sym = this.graphicsLayer.renderer.getSymbol(gra);
+              gra.symbol = sym;
             }
-            else {
-              if (this.graphicsLayer.renderer) {
-                var sym = this.graphicsLayer.renderer.getSymbol(gra);
-                gra.symbol = sym;
-              }
-            }
+          } else if (this.summaryLayer.renderer && this.summaryLayer.renderer.getSymbol) {
+            gra.symbol = this.summaryLayer.renderer.getSymbol(gra);
+          }
+          if (!snapShot && gl) {
             this.graphicsLayer.add(gra);
             this.tab.tabLayers[1].add(gra);
+          } else {
+            snapShotGraphics.push(gra);
           }
         }
+      }
+      if (!snapShot && gl) {
         this.graphicsLayer.setVisibility(true);
         //this.graphicsLayer.visible = true;
         this.parent._toggleTabLayersNew(this.tabNum);
@@ -354,113 +674,38 @@
           });
         }
       }
-    },
-
-    _exportToCSV: function () {
-      if (this.summaryFeatures.length === 0) {
-        return false;
-      }
-
-      var name;
-      if (this.tab.label) {
-        name = this.tab.label;
-      } else {
-        name = this.tab.layers;
-      }
-      var data = [];
-      var cols = [];
-      array.forEach(this.summaryFeatures, function (gra) {
-        data.push(gra.attributes);
-      });
-
-      if (this.config.csvAllFields === true || this.config.csvAllFields === "true") {
-        for (var prop in data[0]) {
-          cols.push(prop);
-        }
-      } else {
-        for (var i = 0; i < this.summaryFields.length; i++) {
-          cols.push(this.summaryFields[i].field);
-        }
-      }
-
-      var fields = this.summaryLayer.fields;
-      if (this.summaryLayer && this.summaryLayer.loaded && fields) {
-        var options = {};
-        if (this.parent.opLayers && this.parent.opLayers._layerInfos) {
-          var layerInfo = this.parent.opLayers.getLayerInfoById(this.summaryLayer.id);
-          if (layerInfo) {
-            options.popupInfo = layerInfo.getPopupInfo();
-          }
-        }
-        var _outFields = [];
-        cols_loop:
-          for (var ii = 0; ii < cols.length; ii++) {
-            var col = cols[ii];
-            var found = false;
-            var field;
-            fields_loop:
-              for (var iii = 0; iii < fields.length; iii++) {
-                field = fields[iii];
-                if (field.name === col) {
-                  found = true;
-                  break fields_loop;
-                }
-              }
-            if (found) {
-              _outFields.push(field);
-            } else {
-              _outFields.push({
-                'name': col,
-                alias: col,
-                show: true,
-                type: "esriFieldTypeString"
-              });
-            }
-          }
-
-        options.datas = data;
-        options.fromClient = false;
-        options.withGeometry = false;
-        options.outFields = _outFields;
-        options.formatDate = true;
-        options.formatCodedValue = true;
-        options.formatNumber = false;
-        CSVUtils.exportCSVFromFeatureLayer(name, this.summaryLayer, options);
-      } else {
-        //This does not handle value formatting
-        CSVUtils.exportCSV(name, data, cols);
+      if (snapShot) {
+        def.resolve({
+          graphics: snapShotGraphics,
+          analysisResults: snapShotResults,
+          context: this
+        });
+        return def;
       }
     },
 
-    //_exportToCSV: function () {
-    //  if (this.summaryFeatures.length === 0) {
-    //    return false;
-    //  }
-    //  var name;
-    //  if (this.tab.label) {
-    //    name = this.tab.label;
-    //  } else {
-    //    name = this.tab.layers;
-    //  }
-    //  var data = [];
-    //  var cols = [];
-    //  array.forEach(this.summaryFeatures, function (gra) {
-    //    data.push(gra.attributes);
-    //  });
-    //  if (this.config.csvAllFields === true || this.config.csvAllFields === "true") {
-    //    for (var prop in data[0]) {
-    //      cols.push(prop);
-    //    }
-    //  } else {
-    //    for (var i = 0; i < this.summaryFields.length; i++) {
-    //      cols.push(this.summaryFields[i].field);
-    //    }
-    //  }
-    //  CSVUtils.exportCSV(name, data, cols);
-    //},
+    _exportToCSV: function (results, snapShot, downloadAll, analysisResults) {
+      var pi = {
+        type: 'grouped',
+        baseLabel: this.baseLabel,
+        csvAllFields: this.parent.config.csvAllFields,
+        layer: this.summaryLayer,
+        opLayers: this.parent.opLayers,
+        nlsValue: this.parent.nls.groupedSummary,
+        nlsCount: this.parent.nls.count,
+        summaryFields: this.summaryFields
+      };
+      var res = analysisUtils.exportToCSV(this.summaryFeatures, snapShot, downloadAll, analysisResults, pi);
+      this.summaryLayer = res.summaryLayer;
+      return res.details;
+    },
 
+    //TODO will take some effort to consolidate this with the analysisUtils
+    // will get it working here first then move on to the analysisUtils
     /*jshint loopfunc: true */
     _getFields: function (layer) {
+      var skipFields = analysisUtils.getSkipFields(layer);
+      var expField;
       var fields = [];
       if (typeof (this.tab.advStat) !== 'undefined') {
         var stats = this.tab.advStat.stats;
@@ -474,6 +719,7 @@
                 type: key,
                 total: 0
               };
+              expField = pStat.expression;
               fields.push(obj);
             });
           }
@@ -481,59 +727,32 @@
       }
 
       // special fields: dates and domains
-      var spFields = {};
-      array.forEach(layer.fields, lang.hitch(this, function (fld) {
-        if (fld.type === "esriFieldTypeDate" || fld.domain) {
-          if (fld.type === "esriFieldTypeDate") {
-            if (layer.infoTemplate) {
-              for (var key in layer.infoTemplate._fieldsMap) {
-                if (typeof (layer.infoTemplate._fieldsMap[key].fieldName) !== 'undefined') {
-                  if (layer.infoTemplate._fieldsMap[key].fieldName === fld.name) {
-                    if (typeof (layer.infoTemplate._fieldsMap[key].format.dateFormat) !== 'undefined') {
-                      this.dateFields[fld.name] = layer.infoTemplate._fieldsMap[key].format.dateFormat;
-                    }
-                  }
-                }
-              }
-            }
-          }
-          spFields[fld.name] = fld;
-        }
-      }));
-      this.specialFields = spFields;
-      return fields;
-    },
+      var spFields = analysisUtils.getSpecialFields(layer);
+      this.dateFields = spFields.dateFields;
+      this.specialFields = spFields.specialFields;
 
-    // get field value
-    _getFieldValue: function (fldName, fldValue) {
-      var value = fldValue;
-      if (this.specialFields[fldName]) {
-        var fld = this.specialFields[fldName];
-        if (fld.type === "esriFieldTypeDate") {
-          var _f;
-          if (this.dateFields[fldName] !== 'undefined') {
-            var dFormat = this.dateFields[fldName];
-            if (typeof (dFormat) !== undefined) {
-              _f = { dateFormat: dFormat };
-            } else {
-              _f = { dateFormat: 'longMonthDayYear' };
-            }
-          } else {
-            _f = { dateFormat: 'longMonthDayYear' };
+      if (this.allFields) {
+        for (var j = 0; j < layer.fields.length; j++) {
+          var fld = layer.fields[j];
+          if (skipFields.indexOf(fld.name) === -1 && expField !== fld.name) {
+            fields.push({
+              field: fld.name,
+              alias: fld.alias,
+              type: fld.type
+            });
           }
-          value = utils.fieldFormatter.getFormattedDate(new Date(fldValue), _f);
-        } else {
-          var codedValues = fld.domain.codedValues;
-          array.some(codedValues, function (obj) {
-            if (obj.code === fldValue) {
-              value = obj.name;
-              return true;
-            }
-          });
         }
       }
-      return value;
+      return fields;
     }
+
+    //_getFields: function (layer) {
+    //  var fieldDetails = analysisUtils.getGroupedCountFields(layer, this.tab, this.allFields, this.parent);
+    //  this.dateFields = fieldDetails.dateFields;
+    //  this.specialFields = fieldDetails.specialFields;
+    //  //return fieldDetails.fields;
+    //  return fieldDetails.allFields;
+    //}
   });
 
   return summaryInfo;

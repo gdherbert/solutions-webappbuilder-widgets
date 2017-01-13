@@ -1,2 +1,2 @@
 ArcGIS Solutions
-Version 2.2 - September 2016
+Version 2.3 - December 2016

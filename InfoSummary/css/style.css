@@ -40,6 +40,218 @@
   min-height: 30px;
 }
 
+/*dart specific settings*/
+
+/*Rather than duplicating all this stuff 
+should just have a set of colors for light and a set 
+of colors for dark...really just doing this to change colors*/
+
+.jimu-widget-InfoSummary .solidBorder-dart {
+  border-bottom: 1px solid rgba(0,0,0,.5);
+}
+
+.jimu-widget-InfoSummary .page-dart {
+	position: relative;
+	width: 360px;
+	margin-left: 0;
+	height: 100%;
+	display: block;
+}
+
+.jimu-widget-InfoSummary .pageContent-dart {
+  position:absolute;
+  left: 10px;
+  right: 10px;
+  top: 5px;
+  bottom: 5px;
+  overflow: hidden;
+  display: block;
+  background-color: #4c4c4c;
+}
+
+.jimu-widget-InfoSummary .featureItem-dart{
+  display: block;
+  width: 100%;
+  visibility: visible;
+  cursor: pointer;
+  border-bottom: 1px solid rgba(0,0,0,.5);
+  float: left;
+  min-height: 30px;
+  color: whitesmoke;
+}
+
+.jimu-rtl .jimu-widget-InfoSummary .featureItem-dart{
+  display: block;
+  width: 100%;
+  visibility: visible;
+  cursor: pointer;
+  border-bottom: 1px solid rgba(0,0,0,.5);
+  float: right;
+  min-height: 30px;
+  color: whitesmoke;
+}
+
+.jimu-widget-InfoSummary .featureItem-dart:hover{
+  background-color: rgba(0,0,0,.5);
+}
+
+.jimu-widget-InfoSummary .groupItem-dart{
+  display: block;
+  width: 100%;
+  cursor: pointer;
+  border-bottom: 1px solid rgba(0,0,0,.5);
+  float: left;
+  overflow: hidden;
+  text-align: -webkit-left;
+  text-align: -moz-left;
+  text-align: left;
+}
+
+.jimu-rtl .jimu-widget-InfoSummary .groupItem-dart{
+  display: block;
+  width: 100%;
+  cursor: pointer;
+  border-bottom: 1px solid rgba(0,0,0,.5);
+  float: right;
+  overflow: hidden;
+  text-align: -webkit-right;
+  text-align: -moz-right;
+  text-align: right;
+}
+
+.jimu-widget-InfoSummary .groupItemTitle-dart:hover .groupItemImageUp-dart{
+  background-image: url(../images/_nav_up.png);
+  background-color: rgba(0,0,0,.5);
+}
+
+.jimu-widget-InfoSummary .groupItemTitle-dart:hover .groupItemImageDown-dart{
+  background-image: url(../images/_nav_down.png);
+  background-color: rgba(0,0,0,.5);
+}
+
+.jimu-widget-InfoSummary .groupItemTitle-dart{
+  width: 100%;
+  height: 30px;
+  display: table;
+  color: whitesmoke;
+}
+
+.jimu-widget-InfoSummary .groupItemImage-dart{
+  width: 25px;
+  height: 12px;
+  cursor: pointer;
+  background-repeat: no-repeat;
+  background-size: contain;
+  background-position: 50% 50%;
+  cursor:pointer;
+  vertical-align:middle;
+  -webkit-border-radius:10px;
+  -moz-border-radius:10px;
+  -o-border-radius:10px;
+  -ms-border-radius:10px;
+  border-radius: 10px;
+  border: 2px solid rgba(0,0,0,.5);
+  color: whitesmoke;
+}
+
+.jimu-widget-InfoSummary .groupItemImageUp-dart{
+  background-image: url(../images/_nav_up.png);
+}
+
+.jimu-widget-InfoSummary .groupItemImageDown-dart {
+  background-image: url(../images/_nav_down.png);
+}
+
+.jimu-widget-InfoSummary .expand-dart{
+  width: 50px;
+  height: 9px;
+  background-repeat: no-repeat;
+  background-size: contain;
+  background-position: 50% 50%;
+  position: absolute;
+  left: 45%;
+  background-color: #4c4c4c;
+  z-index: 1;
+  -webkit-transform: translateZ(0);
+  -moz-transform: rotate(0);
+}
+
+.jimu-rtl .jimu-widget-InfoSummary .expand-dart{
+  width: 50px;
+  height: 9px;
+  background-repeat: no-repeat;
+  background-size: contain;
+  background-position: 50% 50%;
+  position: absolute;
+  right: 45%;
+  background-color: #4c4c4c;
+  z-index: 1;
+  -webkit-transform: translateZ(0);
+  -moz-transform: rotate(0);
+}
+
+.jimu-widget-InfoSummary .expandUp-dart{
+  background-image: url(../images/_nav_up.png);
+  bottom: -1px;
+  background-position-y: 2px;
+  border-top: 1px solid rgba(0,0,0,.5);
+  border-left: 1px solid rgba(0,0,0,.5);
+  border-right: 1px solid rgba(0,0,0,.5);
+  -webkit-border-top-radius:8px;
+  -moz-border-top-radius:8px;
+  -o-border-top-radius:8px;
+  -ms-border-top-radius:8px;
+  border-top-left-radius: 8px;
+  border-top-right-radius: 8px;
+  z-index: 1;
+}
+
+.jimu-widget-InfoSummary .expandDown-dart{
+  background-image: url(../images/_nav_down.png);
+  bottom: -5px;
+  background-position-y: -1px;
+  border-bottom: 1px solid rgba(0,0,0,.5);
+  -webkit-border-bottom-radius:8px;
+  -moz-border-bottom-radius:8px;
+  -o-border-bottom-radius:8px;
+  -ms-border-bottom-radius:8px;
+  border-bottom-left-radius: 8px;
+  border-bottom-right-radius: 8px;
+  z-index: 1;
+}
+
+.jimu-widget-InfoSummary .rec-dart {
+  position: relative;
+  width: 100%;
+  height: 70px;
+  display: table;
+  line-height: 70px;
+  color: #6e6e6e;
+  cursor:pointer;
+}
+
+.jimu-widget-InfoSummary .rec-dart:hover .expandUp-dart {
+  background-color: black;
+  -webkit-transform: translateZ(0);
+  -moz-transform: rotate(0);
+}
+
+.jimu-widget-InfoSummary .rec-dart:hover .expandDown-dart {
+  background-color: black;
+  -webkit-transform: translateZ(0);
+  -moz-transform: rotate(0);
+}
+
+.jimu-widget-InfoSummary .layer-row-mouseover{
+  background-color: #f2f2f2;
+}
+
+.jimu-widget-InfoSummary .layer-row-mouseover-dart{
+   background-color: black;
+}
+
+/*end dart specific settings*/
+
 .jimu-widget-InfoSummary .groupField{
   text-align: left; 
   display: table-cell;
@@ -56,6 +268,24 @@
   width: 100%;
   vertical-align: middle;
   padding-right: 5px;
+}
+
+.jimu-widget-InfoSummary .groupFieldImage{
+  text-align: left; 
+  display: table-cell;
+  font-size: 14px;
+  width: 100%;
+  vertical-align: middle;
+  padding-left: 20px;
+}
+
+.jimu-rtl .jimu-widget-InfoSummary .groupFieldImage{
+  text-align: right; 
+  display: table-cell;
+  font-size: 14px;
+  width: 100%;
+  vertical-align: middle;
+  padding-right: 20px;
 }
 
 .jimu-widget-InfoSummary .groupItem{
@@ -270,12 +500,23 @@
 
 .jimu-widget-InfoSummary .pageClose {
   position: absolute;
-  right: 10px;
-  top: 10px;
-  background: url(../images/x.png) no-repeat;
+  right: 0px;
+  top: 0px;
+  background: url(../images/x.png) no-repeat 50% 50%;
   cursor: pointer;
-  width: 12px;
-  height: 12px;
+  width: 30px;
+  height: 30px;
+  display: block;
+}
+
+.jimu-rtl .jimu-widget-InfoSummary .pageClose {
+  position: absolute;
+  left: 0px;
+  top: 0px;
+  background: url(../images/x.png) no-repeat 50% 50%;
+  cursor: pointer;
+  width: 30px;
+  height: 30px;
   display: block;
 }
 
@@ -326,16 +567,6 @@
   min-height: 100%;
   overflow-x: hidden;
   overflow-y: hidden;
-}
-
-.jimu-widget-InfoSummary .rec {
-  position: relative;
-  width: 100%;
-  height: 70px;
-  display: table;
-  line-height: 70px;
-  color: #6e6e6e;
-  cursor:pointer;
 }
 
 .jimu-widget-InfoSummary .recDefault {
@@ -396,7 +627,6 @@
   line-height: 30px;
   font-size: 16px;
   font-weight: 300;
-  color: #000000;
   display: table-cell;
   width: auto;
   height: 100%;
@@ -407,7 +637,6 @@
   line-height: 30px;
   font-size: 16px;
   font-weight: 300;
-  color: #000000;
   display: table-cell;
   width: auto;
   height: 100%;
@@ -419,6 +648,14 @@
   filter:alpha(opacity=60);
 }
 
+.jimu-widget-InfoSummary .lightThemeColor {
+  color: #000000;
+}
+
+.jimu-widget-InfoSummary .darkThemeColor {
+  color: whitesmoke;
+}
+
 .jimu-widget-InfoSummary .recLabel {
   display: table-cell;
   line-height: 70px;
@@ -426,7 +663,6 @@
   font-weight: 500;
   text-align: center;
   vertical-align: middle;
-  color: #000000;
   padding-left: 65px;
   text-overflow: ellipsis;
   width: 100%;
@@ -443,7 +679,6 @@
   font-weight: 500;
   text-align: center;
   vertical-align: middle;
-  color: #000000;
   padding-right: 65px;
   text-overflow: ellipsis;
   width: 100%;
@@ -460,7 +695,6 @@
   font-weight: 500;
   text-align: center;
   vertical-align: middle;
-  color: #000000;
   padding-left: 65px;
   margin-right: 10px;
   text-overflow: ellipsis;
@@ -475,7 +709,6 @@
   font-weight: 500;
   text-align: center;
   vertical-align: middle;
-  color: #000000;
   padding-right: 65px;
   margin-left: 10px;
   text-overflow: ellipsis;
@@ -485,7 +718,6 @@
 
 .jimu-widget-InfoSummary .recNumInActive {
   height: 100%;
-  color: #000000;
   text-align: center;
   font-size: 28px;
   margin-right: 10px;
@@ -497,7 +729,6 @@
 
 .jimu-rtl .jimu-widget-InfoSummary .recNumInActive {
   height: 100%;
-  color: #000000;
   text-align: center;
   font-size: 28px;
   margin-right: 10px;
@@ -509,7 +740,6 @@
 
 .jimu-widget-InfoSummary .recNum {
   height: 100%;
-  color: #000000;
   text-align: center;
   font-size: 28px;
   margin-right: 10px;
@@ -521,7 +751,6 @@
 
 .jimu-rtl .jimu-widget-InfoSummary .recNum {
   height: 100%;
-  color: #000000;
   text-align: center;
   font-size: 28px;
   margin-left: 10px;
@@ -533,10 +762,12 @@
 
 .jimu-widget-InfoSummary .innerMainPanelIcon {
   background-size: contain; 
-  width: 310px; 
+  width: 100%;
+  max-width: 310px; 
   height: 120px; 
   background-repeat: no-repeat; 
-  background-position: 50% 50%; 
+  background-position: 50% 50%;
+  display: inline-block;
 }
 
 .jimu-widget-InfoSummary .innerSVGPosition {
@@ -591,6 +822,7 @@
   position: relative;
   width: 100%;
   height: 55px;
+  /*height: 25px;*/
   text-align: center;
   display: block;
 }
@@ -607,24 +839,32 @@
 }
 
 .jimu-widget-InfoSummary .imageDataGFX {
-  width: 15px;
-  height: 15px;
+  width: 20px;
+  height: 20px;
   display: block;
   float: left;
-  padding-left: 10px;
 }
 
 .jimu-rtl .jimu-widget-InfoSummary .imageDataGFX {
-  width: 15px;
-  height: 15px;
+  width: 20px;
+  height: 20px;
   display: block;
   float: right;
-  padding-right: 10px;
 }
 
 .jimu-widget-InfoSummary .expandArrow {
   width: 100%;
   height: 20px;
+}
+
+.jimu-widget-InfoSummary .rec {
+  position: relative;
+  width: 100%;
+  height: 70px;
+  display: table;
+  line-height: 70px;
+  color: #6e6e6e;
+  cursor:pointer;
 }
 
 .jimu-widget-InfoSummary .rec:hover .expandUp {
@@ -641,9 +881,9 @@
   -moz-transform: rotate(0);
 }
 
-.jimu-widget-InfoSummary .rec:hover {
+/*.jimu-widget-InfoSummary .rec:hover {
   background-color: #f2f2f2;
-}
+}*/
 
 .jimu-widget-InfoSummary .searching{
   height: 10px;
@@ -651,7 +891,7 @@
   background-image: url(../images/loading.gif);
   background-repeat: no-repeat;
   background-size: contain;
-  background-color: #f2f2f2;
+  /*background-color: #f2f2f2;*/
   position: absolute;
   top: 32px;
   bottom: 0px;
@@ -664,7 +904,6 @@
   background-image: url(../images/loading.gif);
   background-repeat: no-repeat;
   background-size: contain;
-  background-color: #f2f2f2;
   position: absolute;
   top: 32px;
   bottom: 0px;
@@ -673,7 +912,6 @@
 
 .jimu-widget-InfoSummary .expandSearching{
   background-image: url(../images/loading.gif);
-  /*background-color: #f2f2f2;*/
   position: absolute;
   background-repeat: no-repeat;
   background-size: contain;
@@ -684,7 +922,6 @@
 
 .jimu-rtl .jimu-widget-InfoSummary .expandSearching{
   background-image: url(../images/loading.gif);
-  /*background-color: #f2f2f2;*/
   position: absolute;
   background-repeat: no-repeat;
   background-size: contain;
@@ -703,7 +940,7 @@
   left: 45%;
   background-color: white;
   z-index: 1;
-    -webkit-transform: translateZ(0);
+  -webkit-transform: translateZ(0);
   -moz-transform: rotate(0);
 }
 
@@ -785,47 +1022,173 @@
   user-select: none;
 }
 
+
 /* MEDIA SPECIFIC: SMALL TABLETS */
-
 @media only screen and (max-width: 750px) {
-
 	.jimu-widget-InfoSummary .pageContent {
-		/*top: 60px;*/
 	}
 	
 	.jimu-widget-InfoSummary .pageHeader {
 	  position: relative;
 	  width: 100%;
-	  height: 35px;
+    height: 35px;
+	  /*height: 0px;*/
 	  text-align: center;
 	  display: block;
 	}
 
-    .jimu-widget-InfoSummary .pageHeaderRefresh {
+  .jimu-widget-InfoSummary .pageHeaderRefresh {
       position: relative;
       width: 100%;
       height: 65px;
+      /*height: 45px;*/
       text-align: center;
       display: block;
     }
-	
-    .jimu-widget-InfoSummary .pageTitle {
-      position: absolute;
-      left: 0px;
-      bottom: 20px;
-      height: auto;
-      font-size: 16px;
-      color: #ffffff;
-      text-align: center;
-      width: 100%;
-    }
 
-    .jimu-widget-InfoSummary .pageTitleWidth {
+  .jimu-widget-InfoSummary .pageHeaderRefreshNoText {
+	  position: relative;
 	  width: 100%;
-    }
+	  height: 25px;
+	  text-align: center;
+	  display: block;
+  }
+	
+  .jimu-widget-InfoSummary .pageTitle {
+    position: absolute;
+    left: 0px;
+    bottom: 20px;
+    height: auto;
+    font-size: 16px;
+    color: #ffffff;
+    text-align: center;
+    width: 100%;
+  }
+
+  .jimu-widget-InfoSummary .pageTitleWidth {
+	  width: 100%;
+  }
 		
 	.jimu-widget-InfoSummary .pageCounter {
-      display: none;
+    display: none;
+	  position: absolute;
+	  left: 5px;
+	  margin-left: 0px;
+    top: 5px;
+	  /*top: 0px;*/
+	  width: 70px;
+	  font-size: 40px;
+	  height: 70px;
+	  line-height: 70px;
+	  border: 5px solid rgba(0,0,0,1);
+	  -moz-border-radius: 40px;
+	  -webkit-border-radius: 40px;
+	  border-radius: 40px;
+	}
+	
+	.jimu-widget-InfoSummary .pageBody {
+    position: absolute;
+	  /*top: 0px;*/
+    top: 35px;
+    bottom: 0px;
+	  width: 100%;
+	  display: block;
+	  color: #000000;
+	  font-size: 10px;
+	  text-align: center;
+	  padding: 0px;
+	  overflow-x: hidden;
+	  overflow-y:auto;
+	}
+
+  .jimu-widget-InfoSummary .pageBodyRefresh {
+    position: absolute;
+    top: 65px;
+	  /*top: 45px;*/
+    bottom: 0px;
+	  width: 100%;
+	  display: block;
+	  color: #000000;
+	  font-size: 10px;
+	  text-align: center;
+	  padding: 0px;
+	  overflow-x: hidden;
+	  overflow-y:auto;
+	}
+
+  .jimu-widget-InfoSummary .pageBodyRefreshNoText {
+    position: absolute;
+    top: 25px;
+    bottom: 0px;
+    width: 100%;
+    display: block;
+    color: #000000;
+    font-size: 10px;
+    text-align: center;
+    padding: 0px;
+    overflow-x: hidden;
+    overflow-y: auto;
+  }
+}
+
+/* MEDIA SPECIFIC: PHONES */
+@media only screen and (max-width: 470px) {
+  .jimu-widget-InfoSummary{
+    width: 100% !important;
+    height: 50%;
+  }
+	
+  /*.jimu-widget-InfoSummary .pageBodyRefreshNoText {*/
+  .jimu-widget-InfoSummary .panelContent {
+    position: absolute;
+	  right: 0px;
+	  bottom: 0px;
+	  width: 100%;
+  }
+
+  .jimu-widget-InfoSummary .page {
+    position: relative;
+	  width: 100%;
+	  height: 100%;
+	  display: block;
+	  background-color: rgba(0,0,0,0.15);
+  }
+
+  .jimu-widget-InfoSummary .pageHeader {
+    position: relative;
+	  width: 100%;
+	  height: 35px;
+	  text-align: center;
+	  display: block;
+  }
+
+  .jimu-widget-InfoSummary .pageHeaderRefresh {
+	  position: relative;
+	  width: 100%;
+	  height: 65px;
+	  text-align: center;
+	  display: block;
+  }
+	
+  .jimu-widget-InfoSummary .pageTitle {
+	  position: absolute;
+	  left: 0px;
+	  bottom: 20px;
+	  height: auto;
+	  font-size: 16px;
+    color: #ffffff;
+    text-align: center;
+    top: 25px;
+    bottom: 0px;
+    width: 100%;
+  }
+
+  .jimu-widget-InfoSummary .pageTitleWidth {
+	  width: 100%;
+  }
+		
+  .jimu-widget-InfoSummary .pageCounter {
+    display: none;
 	  position: absolute;
 	  left: 5px;
 	  margin-left: 0px;
@@ -838,140 +1201,42 @@
 	  -moz-border-radius: 40px;
 	  -webkit-border-radius: 40px;
 	  border-radius: 40px;
-	  /*opacity:0.3;
-	  filter:alpha(opacity=30);*/
-	}
-	
-	.jimu-widget-InfoSummary .pageBody {
-      position: absolute;
-	  top: 35px;
-      bottom: 0px;
-	  width: 100%;
-	  display: block;
-	  color: #000000;
-	  font-size: 10px;
-	  text-align: center;
-	  padding: 0px;
-	  overflow-x: hidden;
-	  overflow-y:auto;
-	}
-
-    .jimu-widget-InfoSummary .pageBodyRefresh {
-      position: absolute;
-	  top: 65px;
-      bottom: 0px;
-	  width: 100%;
-	  display: block;
-	  color: #000000;
-	  font-size: 10px;
-	  text-align: center;
-	  padding: 0px;
-	  overflow-x: hidden;
-	  overflow-y:auto;
-	}
-}
-
-/* MEDIA SPECIFIC: PHONES */
-
-@media only screen and (max-width: 470px) {
-
-  .jimu-widget-InfoSummary{
-    width: 100% !important;
-    height: 50%;
-  }
-	
-  .jimu-widget-InfoSummary .panelContent {
-    position: absolute;
-	right: 0px;
-	bottom: 0px;
-	width: 100%;
-  }
-
-  .jimu-widget-InfoSummary .page {
-    position: relative;
-	width: 100%;
-	height: 100%;
-	display: block;
-	background-color: rgba(0,0,0,0.15);
-  }
-
-  .jimu-widget-InfoSummary .pageHeader {
-    position: relative;
-	width: 100%;
-	height: 35px;
-	text-align: center;
-	display: block;
-  }
-
-  .jimu-widget-InfoSummary .pageHeaderRefresh {
-	position: relative;
-	width: 100%;
-	height: 65px;
-	text-align: center;
-	display: block;
-  }
-	
-  .jimu-widget-InfoSummary .pageTitle {
-	position: absolute;
-	left: 0px;
-	bottom: 20px;
-	height: auto;
-	font-size: 16px;
-    color: #ffffff;
-    text-align: center;
-    width: 100%;
-  }
-
-  .jimu-widget-InfoSummary .pageTitleWidth {
-	width: 100%;
-  }
-		
-  .jimu-widget-InfoSummary .pageCounter {
-    display: none;
-	position: absolute;
-	left: 5px;
-	margin-left: 0px;
-	top: 5px;
-	width: 70px;
-	font-size: 40px;
-	height: 70px;
-	line-height: 70px;
-	border: 5px solid rgba(0,0,0,1);
-	-moz-border-radius: 40px;
-	-webkit-border-radius: 40px;
-	border-radius: 40px;
-	opacity:0.3;
-	filter:alpha(opacity=30);
+	  opacity:0.3;
+	  filter:alpha(opacity=30);
   }
 	
   .jimu-widget-InfoSummary .pageBody {
     position: absolute;
-	top: 35px;
-	bottom: 0px;
-	width: 100%;
-	display: block;
-	color: #000000;
-	font-size: 10px;
-	text-align: center;
-	padding: 0px;
+	  top: 35px;
+	  bottom: 0px;
+	  width: 100%;
+	  display: block;
+	  color: #000000;
+	  font-size: 10px;
+	  text-align: center;
+	  padding: 0px;
+    display: block;
+    color: #000000;
+    font-size: 10px;
+    text-align: center;
+    padding: 0px;
     overflow-x: hidden;
     overflow-y:auto;
   }
 
   .jimu-widget-InfoSummary .pageBodyRefresh {
     position: absolute;
-	top: 65px;
-	bottom: 0px;
-	width: 100%;
-	display: block;
-	color: #000000;
-	font-size: 10px;
-	text-align: center;
-	padding: 0px;
-	overflow-x: hidden;
+	  top: 65px;
+	  bottom: 0px;
+	  width: 100%;
+	  display: block;
+	  color: #000000;
+	  font-size: 10px;
+	  text-align: center;
+	  padding: 0px;
+	  overflow-x: hidden;
     overflow-y:auto;
+    overflow-y: auto;
   }
 }
-	
-
 

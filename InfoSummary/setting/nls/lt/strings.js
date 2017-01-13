@@ -48,5 +48,7 @@ define({
   "hidePanelHelp": "Įjungti / išjungti pagrindinio skydelio rodymą.",
   "continuousRefreshHelp": "Pastaba: elementų atnaujinimas bus vykdomas nuolat.",
   "panelCountOptionHelp": "Įjungti / išjungti elementų skaičiaus rodymą.",
-  "panelIconOptionHelp": "Įjungti / išjungti logotipo pagrindiniame skydelyje rodymą."
+  "panelIconOptionHelp": "Įjungti / išjungti logotipo pagrindiniame skydelyje rodymą.",
+  "rdoGroupByField": "pagal lauką",
+  "rdoGroupByRenderer": "pagal atvaizdavimą"
 });

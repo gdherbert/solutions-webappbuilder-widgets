@@ -48,5 +48,7 @@ define({
   "hidePanelHelp": "Omogućite/onemogućite prikazivanje glavnog panela.",
   "continuousRefreshHelp": "Napomena: Osvežavanje kolekcije geoobjekata obavlja se neprestano.",
   "panelCountOptionHelp": "Omogućite/onemogućite prikazivanje broja geoobjekata.",
-  "panelIconOptionHelp": "Omogućite/onemogućite prikazivanje logotipa na glavom panelu."
+  "panelIconOptionHelp": "Omogućite/onemogućite prikazivanje logotipa na glavom panelu.",
+  "rdoGroupByField": "po polju",
+  "rdoGroupByRenderer": "po prikazivaču"
 });

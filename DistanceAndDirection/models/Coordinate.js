@@ -80,7 +80,7 @@ define([
         this.inputType = tc[tc.length-1].name;
         this.util.getXYNotation(this.inputString, this.inputType).then(
           dojoLang.hitch(this, function (r) {
-            if (r.length <= 0 || !r[0][0]){
+            if (r.length <= 0 || (!r[0][0] && r[0][0] != 0)){
               this.hasError = true;
               this.message = 'Invalid Coordinate';
               this.inputTypeDef.resolve(this);
@@ -103,7 +103,7 @@ define([
           dojoLang.hitch(this, function (r) {
             this.hasError=true;
             this.inputType = 'UNKNOWN';
-            this.message = 'Invalid Coordinate 2';
+            this.message = 'Invalid Coordinate';
             dojoTopic.publish('COORDINATE_INPUT_TYPE_CHANGE', this);
             this.inputTypeDef.resolve(this);
           })
@@ -111,7 +111,7 @@ define([
       } else {
         this.hasError = true;
         this.inputType = 'UNKNOWN';
-        this.message = 'Invalid Coordinate 3';
+        this.message = 'Invalid Coordinate';
         this.inputTypeDef.resolve(this);
         dojoTopic.publish('COORDINATE_INPUT_TYPE_CHANGE', this);
       }
@@ -137,7 +137,7 @@ define([
       this.util.getCoordValues({
         x: this.coordinateEsriGeometry.x,
         y: this.coordinateEsriGeometry.y
-      }, this.formatType, 4).then(dojoLang.hitch(this, function (r) {
+      }, this.formatType, 6).then(dojoLang.hitch(this, function (r) {
         this.set('outputString', this.getCoordUI(r));
         dojoTopic.publish('COORDINATE_INPUT_FORMAT_CHANGE', this);
       }));

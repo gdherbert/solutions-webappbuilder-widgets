@@ -53,6 +53,7 @@ define([
          *
          **/
         getCleanInput: function (fromstr) {
+            fromstr = fromstr.replace(/\n/g,'');
             return fromstr.replace(/\s+/g, ' ').trim();
         },
 
@@ -82,14 +83,21 @@ define([
                 addSpaces: false
             };
 
-            if (toType === 'MGRS') {
+            if (toType === 'DD') {
+                params.numOfDigits = 6;
+            } else if(toType === 'MGRS') {
                 params.conversionMode = 'mgrsDefault';
                 params.addSpaces = false;
                 params.numOfDigits = 5;
-            } else if (toType === 'UTM') {
+            } else if (toType === 'UTM (H)') {
+                params.conversionType = 'utm';
                 params.conversionMode = 'utmNorthSouth';
                 params.addSpaces = true;
-            } else if (toType === 'GARS') {
+            } else if (toType === 'UTM (Z)') {
+                params.conversionType = 'utm';
+                params.conversionMode = 'utmDefault';
+                params.addSpaces = true;
+            }else if (toType === 'GARS') {
                 params.conversionMode = 'garsDefault';
             } else if (toType === 'USNG') {
                 params.addSpaces = true;
@@ -118,7 +126,8 @@ define([
             } else {
               tt = toType;
             }
-
+            
+            
             var params = {
                 sr: 4326,
                 conversionType: tt,
@@ -130,7 +139,7 @@ define([
             case 'DD':
             case 'DDM':
             case 'DMS':
-                params.numOfDigits = 1;
+                params.numOfDigits = 2;
                 a = fromStr.replace(/['°"]/g, '');
                 params.strings.push(a);
                 break;
@@ -138,8 +147,15 @@ define([
                 params.conversionMode = 'mgrsNewStyle';
                 params.strings.push(fromStr);
                 break;
-            case 'UTM':
+            case 'UTM (H)':
+                params.conversionType = 'utm';
                 params.conversionMode = 'utmNorthSouth';
+                a = fromStr.replace(/[mM]/g, '');
+                params.strings.push(a);
+                break;
+            case 'UTM (Z)':
+                params.conversionType = 'utm';
+                params.conversionMode = 'utmDefault';
                 a = fromStr.replace(/[mM]/g, '');
                 params.strings.push(a);
                 break;
@@ -160,23 +176,28 @@ define([
             //regexr.com
             var strs = [{
                     name: 'DD',
-                    pattern: /([-+]?\d{1,3}[.]?\d*[NnSs]?[\s,]{1}[-+]?\d{1,3}[.]?\d*[EeWw]?){1}/
-                }, {
+                    pattern: /^([-+]?\d{1,3}[.]?\d*[\s]*[NnSs]?[\s]*[,]?[\s]*[-+]?\d{1,3}[.]?\d*[\s]*[EeWw]?)/
+                    }, {
                     name: 'DDM',
                     pattern: /^\s?\d{1,3}[°]?\s[-+]?\d*\.?\d*\'?[NnSs]?[\s,]{1}\d{1,3}[°]?\s[-+]?\d*\.?\d*\'[EeWw]?/
+                    
                 }, {
                     name: 'DMS',
-                    pattern: /([+-]?\d{1,3}[°]?[\s,]\d*[']?[\s,]\d*[.]?\d*['"]?[NnSsEeWw]?){1,2}/
+                    pattern: /^(?!9[1-9])?([0-8]?\d?|90)[\s]*[°]?[\s]*([0]?[0-9]|[0-5]\d){1}[\s]*['"]?[\s]*[0]?[0-9]?[0-5]\d(\.\d+)?[\s]*['"]?[\s]*[NnSs]?[\s]*(180|((1[0-7]\d)|([0]?[0]?[1-9]?\d)))[\s]*[°]?[\s]*([0]?[0-9]|[0-5]\d){1}[\s]*['"]?[\s]*[0]?[0-9]?[0-5]\d(\.\d+)?[\s]*['"]?[\s]*[WwEe]?[\s]*/
+                    //pattern: /([+-]?\d{1,3}[°]?[\s,]\d*[']?[\s,]\d*[.]?\d*['"]?[NnSsEeWw]?){1,2}/
                 }, {
                     name: 'GARS',
                     pattern: /\d{3}[a-zA-Z]{2}\d?\d?/
                 }, {
                     name: 'MGRS',
                     pattern: /^\d{1,2}[c-hj-np-xC-HJ-NP-X][-,;:\s]*[a-hj-np-zA-HJ-NP-Z]{1}[a-hj-np-zA-HJ-NP-Z]{1}[-,;:\s]*\d{0,10}/
-                }, {
-                    name: 'USNG',
-                    pattern: /\d{2}[S,s,N,n]*\s[A-Za-z]*\s\d*/
-                }, {
+                },
+                //commented out for now as USNG should be the same as MGRS
+                //{
+                    //name: 'USNG',
+                    //pattern: /\d{2}[S,s,N,n]*\s[A-Za-z]*\s\d*/
+                //},
+                {
                     name: 'UTM',
                     pattern: /^\d{1,3}[NnSs]{1}([\s,-]\d*\.?\d*[mM]?){2}/
                 }
@@ -309,14 +330,14 @@ define([
 
             r.latdeg =  this.stripDecimalPlaces(parseFloat(parts[0]).toFixed(1), 1);
             r.latmin =  this.stripDecimalPlaces(parseFloat(parts[1]).toFixed(1), 1);
-            r.latsec =  this.stripDecimalPlaces(parseFloat(parts[2].replace(/[NnSs]/, '')).toFixed(1), 1);
+            r.latsec =  this.stripDecimalPlaces(parseFloat(parts[2].replace(/[NnSs]/, '')).toFixed(2), 2);
 
             var latdegdir = parts[2].slice(-1);
             r.ydir = latdegdir;
 
             r.londeg = this.stripDecimalPlaces(parseFloat(parts[3]).toFixed(1), 1);
             r.lonmin = this.stripDecimalPlaces(parseFloat(parts[4]).toFixed(1), 1);
-            r.lonsec = this.stripDecimalPlaces(parseFloat(parts[5].replace(/[EWew]/, '')).toFixed(1), 1);
+            r.lonsec = this.stripDecimalPlaces(parseFloat(parts[5].replace(/[EWew]/, '')).toFixed(2), 2);
 
             var londegdir = parts[5].slice(-1);
             r.xdir = londegdir;
@@ -426,7 +447,30 @@ define([
         /**
          *
          **/
-        getFormattedUTMStr: function (fromValue, withFormatStr, addSignPrefix, addDirSuffix) {
+        getFormattedUTMZStr: function (fromValue, withFormatStr, addSignPrefix, addDirSuffix) {
+            var r = {};
+            r.sourceValue = fromValue;
+            r.sourceFormatString = withFormatStr;
+
+            r.parts = fromValue[0].split(/[ ,]+/);
+            r.zone = r.parts[0].replace(/[A-Z]/,'');
+            r.zoneletter = r.parts[0].slice(-1);
+            r.easting = r.parts[1];
+            r.westing = r.parts[2];
+
+            //ZH Xm Ym'
+            var s = withFormatStr.replace(/Z/, r.zone + r.zoneletter);
+            s = s.replace(/X/, r.easting);
+            s = s.replace(/Y/, r.westing);
+
+            r.formatResult = s;
+            return r;
+        },
+        
+        /**
+         *
+         **/
+        getFormattedUTMHStr: function (fromValue, withFormatStr, addSignPrefix, addDirSuffix) {
             var r = {};
             r.sourceValue = fromValue;
             r.sourceFormatString = withFormatStr;

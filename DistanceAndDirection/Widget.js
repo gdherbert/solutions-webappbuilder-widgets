@@ -17,6 +17,7 @@
 define([
   'dojo/_base/declare',
   'dojo/_base/lang',
+  'dojo/aspect',
   'dojo/topic',
   'dojo/_base/array',
   'dojo/on',
@@ -32,6 +33,7 @@ define([
 ], function (
   dojoDeclare,
   dojoLang,
+  dojoAspect,
   dojoTopic,
   dojoArray,
   dojoOn,
@@ -259,23 +261,23 @@ define([
                       content: this.ellipseTab
                   },
                   {
-                      title: 'Range',
+                      title: 'Rings',
                       content: this.rangeTab
                   }
                 ]
             }, this.tabContainer);
+            
+            this.tab.selectTab('Lines');
+            
+            var tabContainer1 = dijitRegistry.byId('tabContainer');
+    
+            dojoAspect.after(tabContainer1, "selectTab", function() {
+                dojoTopic.publish('TAB_SWITCHED');        
+            });
 
             this.own(dojoOn(this.clearGraphicsButton, 'click', function () {
                 dojoTopic.publish('DD_CLEAR_GRAPHICS');
             }));
-        },
-
-        onClose: function () {
-            dojoTopic.publish('DD_WIDGET_CLOSE');
-        },
-
-        onOpen: function () {
-            dojoTopic.publish('DD_WIDGET_OPEN');
         }
     });
     return clz;

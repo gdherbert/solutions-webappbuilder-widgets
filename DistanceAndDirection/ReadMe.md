@@ -107,9 +107,8 @@ In order to develop and test widgets you need to deploy the DistanceAndDirection
 	* Choose the Ellipse tab on the Distance and Directions Widget
 	* Start an interactive session by selecting the arrow icon next to the “Center Point” text box
 	* Choose the location where you want the ellipse to be started from
-	* Drag the cursor to the location where the major axis will end
-	* Select the orientation angle of the major axis
-	* select the length of the minor axis
+	* Drag the cursor to the location where the major axis will end and click to set (whilst dragging the major axis will draw in both directions from the "center point")
+	* Drag the mouse back towards the "center point" to resize the minor axis (the tool will not allow the minor axis to be greater that the major)
 	* Graphic(s) will then be displayed on the map showing the Ellipse you created based on the values of the parameters that were set
 
 ### Create Range Rings Manually

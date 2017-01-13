@@ -29,6 +29,7 @@ define([
     'dijit/form/CheckBox',
     'jimu/dijit/Popup',
     'jimu/dijit/SimpleTable',
+    'jimu/dijit/ImageChooser',
     'jimu/utils',
     'jimu/dijit/Message',
     'esri/request',
@@ -39,7 +40,8 @@ define([
     'dojo/dom-style',
     'dojo/_base/html',
     'dojo/_base/array',
-    './MySymbolPicker'
+    './MySymbolPicker',
+    'dojox/form/FileUploader'
 ],
   function (
     query,
@@ -56,6 +58,7 @@ define([
     CheckBox,
     Popup,
     Table,
+    ImageChooser,
     utils,
     Message,
     esriRequest,
@@ -152,6 +155,20 @@ define([
       startup: function () {
         this.inherited(arguments);
         this.refreshLayers = [];
+
+        this.imageChooser = new ImageChooser({
+          format: [ImageChooser.GIF, ImageChooser.JPEG, ImageChooser.PNG],
+          label: this.nls.uploadImage,
+          cropImage: false,
+          showTip: false,
+          goldenWidth: 10,
+          goldenHeight: 15
+        });
+
+        domStyle.set(this.imageChooser.domNode, "font-size", "14px");
+        html.place(this.imageChooser.domNode, this.mainPanelPreviewButton, 'replace');
+
+        this.connect(this.imageChooser, "onImageChange", "uploadImage");
       },
 
       setupRefreshInterval: function () {
@@ -250,6 +267,8 @@ define([
       _setLayers: function () {
         var supportedLayerTypes = ["ArcGISFeatureLayer", "ArcGISMapServiceLayer", "CSV",
                                    "KML", "GeoRSS", "ArcGISStreamLayer", "Feature Layer"];
+        this.gtQueries = [];
+        this.gtQueryUrls = [];
         var options = [];
         for (var i = 0; i < this.opLayers._layerInfos.length; i++) {
           var supportsDL = true;
@@ -358,6 +377,51 @@ define([
               supportsDynamic: supportsDL
             });
           }
+        }
+
+        //execute the setGeomType queries
+        if (this.gtQueries.length > 0) {
+          var queryList = new DeferredList(this.gtQueries);
+          //disable add
+          html.removeClass(this.btnAddLayer, "btn-add-section enable");
+          html.addClass(this.btnAddLayer, "btn-add-section-disabled");
+          queryList.then(lang.hitch(this, function (queryResults) {
+            if (queryResults) {
+              if (queryResults.length > 0) {
+                for (var q = 0; q < queryResults.length; q++) {
+                  var resultInfo = queryResults[q][1];
+                  var url = this.gtQueryUrls[q];
+                  var lIdx;
+                  for (var i = 0; i < this.layer_options.length; i++) {
+                    if (url === this.layer_options[i].url) {
+                      lIdx = i;
+                      break;
+                    }
+                  }
+                  if (typeof (lIdx) !== 'undefined') {
+                    this.layer_options[lIdx].geometryType = resultInfo.geometryType;
+                    if (typeof (resultInfo.drawingInfo) !== 'undefined') {
+                      this.layer_options[lIdx].renderer = resultInfo.drawingInfo.renderer;
+                      this.layer_options[lIdx].drawingInfo = resultInfo.drawingInfo;
+                      this.layer_options[lIdx].fields = resultInfo.fields;
+
+                      var f;
+                      for (var ii = 0; ii < resultInfo.fields.length; ii++) {
+                        f = resultInfo.fields[ii];
+                        if (f.type === "esriFieldTypeOID") {
+                          break;
+                        }
+                      }
+                      this.layer_options[lIdx].oidFieldName = f;
+                    }
+                  }
+                }
+                //enable add
+                html.removeClass(this.btnAddLayer, "btn-add-section-disabled");
+                html.addClass(this.btnAddLayer, "btn-add-section enable");
+              }
+            }
+          }));
         }
         this.layer_options = lang.clone(options);
       },
@@ -923,7 +987,6 @@ define([
             if(OpLyr2 && OpLyr2.resourceInfo){
               supportsDL = OpLyr2.resourceInfo.supportsDynamicLayers;
             }
-
             pOptions.push({
               label: Node.title ? Node.title : Node.id,
               value: Node.id,
@@ -993,70 +1056,22 @@ define([
       },
 
       setGeometryType: function (OpLayer) {
-        var queries = [];
         if (typeof (OpLayer.url) !== 'undefined') {
           if (OpLayer.url.indexOf("MapServer") > -1) {
-            queries.push(esriRequest({ "url": OpLayer.url + "?f=json" }));
+            this.gtQueries.push(esriRequest({ "url": OpLayer.url + "?f=json" }));
+            this.gtQueryUrls.push(OpLayer.url);
           }
-        }
-
-        if (queries.length > 0) {
-          var queryList = new DeferredList(queries);
-          queryList.then(lang.hitch(this, function (queryResults) {
-            if (queryResults) {
-              if (queryResults.length > 0) {
-                var resultInfo = queryResults[0][1];
-                var lIdx;
-                for (var i = 0; i < this.layer_options.length; i++) {
-                  if (this.layer_options[i].label === resultInfo.name) {
-                    lIdx = i;
-                    break;
-                  }
-                }
-
-                if (typeof (lIdx) !== 'undefined') {
-                  this.layer_options[lIdx].geometryType = resultInfo.geometryType;
-                  if (typeof (resultInfo.drawingInfo) !== 'undefined') {
-                    this.layer_options[lIdx].renderer = resultInfo.drawingInfo.renderer;
-                    this.layer_options[lIdx].drawingInfo = resultInfo.drawingInfo;
-
-                    //Also need the OID field and fields
-                    this.layer_options[lIdx].fields = resultInfo.fields;
-
-                    var f;
-                    for (var ii = 0; ii < resultInfo.fields.length; ii++) {
-                      f = resultInfo.fields[ii];
-                      if (f.type === "esriFieldTypeOID") {
-                        break;
-                      }
-                    }
-                    this.layer_options[lIdx].oidFieldName = f;
-                  }
-                }
-              }
-            }
-          }));
         }
       },
 
-      uploadImage: function () {
-        var reader = new FileReader();
-        reader.onload = lang.hitch(this, function () {
-          this.panelMainIcon.innerHTML = "<div></div>";
-          this.mpi = reader.result;
-          domConstruct.create("div", {
-            "class" : "innerMainPanelIcon",
-            style: 'background-image: url(' + reader.result + ');',
-            title: this.nls.mainPanelIcon
-          }, this.panelMainIcon);
-        });
-
-        this.fileInput.onchange = lang.hitch(this, function () {
-          var f = this.fileInput.files[0];
-          reader.readAsDataURL(f);
-        });
-
-        this.fileInput.click();
+      uploadImage: function (i) {
+        this.panelMainIcon.innerHTML = "";
+        this.mpi = i;
+        domConstruct.create("div", {
+          "class" : "innerMainPanelIcon",
+          style: 'background-image: url(' + i + ');',
+          title: this.nls.mainPanelIcon
+        }, this.panelMainIcon);
       },
 
       getConfig: function () {
